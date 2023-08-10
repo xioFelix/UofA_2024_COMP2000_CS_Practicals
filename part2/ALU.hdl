@@ -43,22 +43,30 @@ CHIP ALU {
 
     PARTS:
    // Put you code here:
-    Mux16(a=x,b[0..15]=false,sel=zx,out=zdx);    // zero the x
-    Not16(in=zdx,out=negx);                     // negate the x
-    Mux16(a=zdx,b=negx,sel=nx,out=ndx);         // choose x or negx
+    // zero / negate x
+    Mux16(a=x, sel=zx, out=x1);
+    Not16(in=x1, out=negX);
+    Mux16(a=x1, b=negX, sel=nx, out=x2);
 
-    Mux16(a=y,b[0..15]=false,sel=zy,out=zdy);   // zero the y
-    Not16(in=zdy,out=noty);                     // negate the y
-    Mux16(a=zdy,b=noty,sel=ny,out=ndy);         // choose y or negy
+    // zero / negate y
+    Mux16(a=y, sel=zy, out=y1);
+    Not16(in=y1, out=negY);
+    Mux16(a=y1, b=negY, sel=ny, out=y2);
 
-    Add16(a=ndx,b=ndy,out=xplusy);              // x + y
-    And16(a=ndx,b=ndy,out=xandy);               // x & y
-    Mux16(a=xandy,b=xplusy,sel=f,out=fxy);      // chose function
+    // x + y (if 1) or x & y (if 0)
+    Add16(a=x2, b=y2, out=xyadd);
+    And16(a=x2, b=y2, out=xyand);
+    Mux16(a=xyand, b=xyadd, sel=f, out=result);
 
-    Not16(in=fxy,out=nfxy);                     // not the output or not
-    Mux16(a=fxy,b=nfxy,sel=no,out=oo);          // choose which
+    Not16(in=result, out=negatedResult);
+    Mux16(a=result, b=negatedResult, sel=no, out=out, out[15]=out1, out[0..7]=part1, out[8..15]=part2);
 
-    And16(a[0..15]=true,b=oo,out[15]=ng,out[0..14]=drop);   // ng
+    // 1 if (out == 0), 0 otherwise
+    Or8Way(in=part1, out=zr1);
+    Or8Way(in=part2, out=zr2);
+    Or(a=zr1, b=zr2, out=nzr);
+    Not(in=nzr, out=zr);
 
-    Or16(a=oo,b[0..15]=false,out=out);                      // oo = output
+    // 1 if (out < 0),  0 otherwise
+    And(a=out1, b=true, out=ng);
 }
