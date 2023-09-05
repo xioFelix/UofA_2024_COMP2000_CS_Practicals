@@ -14,30 +14,24 @@ M=D
 @1
 A=M
 
-// Store the address of the current element in R3
-@3
-M=A
-
 // Load R2 (the length of the array) into D
 @2
 D=M
 
-// Store the length of the array in R4
-@4
-M=D
+// Initialize a loop counter to 1 (as we have already processed the first element)
+@3
+M=1
 
 // Begin loop (label: LOOP_START)
 (LOOP_START)
 
 // Check if we have processed all elements (if D=0, jump to END)
-@4
+@3
 D=M
+@2
+D=D-M
 @END
 D;JEQ
-
-// Load the address of the current element into A
-@3
-A=M
 
 // Load the value of the current element into D
 D=M
@@ -57,10 +51,6 @@ D;JLT
 0;JMP
 
 (UPDATE_MIN)
-// Load the address of the current element into A
-@3
-A=M
-
 // Load the value of the current element into D
 D=M
 
@@ -70,13 +60,13 @@ M=D
 
 // Label: INCREMENT_INDEX
 (INCREMENT_INDEX)
-// Increment the address of the current element (stored in R3)
-@3
+// Increment the address of A register
+@1
 M=M+1
 
-// Decrement the length of the array (stored in R4)
-@4
-M=M-1
+// Increment the loop counter
+@3
+M=M+1
 
 // Jump back to the start of the loop
 @LOOP_START
