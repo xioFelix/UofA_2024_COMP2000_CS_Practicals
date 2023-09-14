@@ -7,26 +7,92 @@
 // (R0, R1, R2 refer to RAM[0], RAM[1], and RAM[2], respectively.)
 
 // Put your code here.
+// Multiplies R1 and R2 and stores the result in R0.
+// (R0, R1, R2 refer to RAM[0], RAM[1], and RAM[2], respectively.)
 
-// Initializes R0 to 0
+// Initialize R0 to 0
 @R0
 M=0
 
-// Loads R1 to D register
+// Load R1 into D register
 @R1
 D=M
+@ZR
+D;JEQ
 
-// Loads the address of R2 to A register
-@R2
-A=M
+// Check if R1 is negative, if so, negate it and store the negated value in R3, also set R4 to 1 to indicate a sign change
+@R4
+M=0
+@R3
+M=D
+@R1_NEG
+D;JLT
+@CHECK_R2_NEG
+0;JMP
 
-// Multiplies R1 and R2 (D and A) using a loop and stores the result in R0
-(MULTIPLY_LOOP)
-@R0
-D=M+D  // Adds the content of D to R0, this essentially multiplies R1 and R2 by repeated addition
+(R1_NEG)
+@R3
+M=-M
+@R4
+M=1
+
+// Check if R2 is negative, if so, negate it and toggle R4 to indicate a sign change
+(CHECK_R2_NEG)
 @R2
-M=M-1  // Decreases R2 by 1
+D=M
+@ZR
+D;JEQ
+@R2_NEG
+D;JLT
 @MULTIPLY_LOOP
-D;JGT  // If D (which now holds the content of R0) is greater than 0, jump to MULTIPLY_LOOP
+0;JMP
 
+(R2_NEG)
+@R2
+M=-M
+@R4
+D=M
+M=D-1
+M=-M
+
+// Start of the multiplication loop
+(MULTIPLY_LOOP)
+    // Add R3 (which holds the value of R1) to R0
+    @R3
+    D=M
+    @R0
+    M=D+M
+
+    // Decrease R2 by 1
+    @R2
+    M=M-1
+
+    // Load the updated value of R2 into D
+    D=M
+
+    // If D is zero, jump to END
+    @END
+    D;JEQ
+
+    // Otherwise, jump back to the start of the loop
+    @MULTIPLY_LOOP
+    0;JMP
+
+// End label
 (END)
+    // Check if we need to negate the result (based on the value in R4)
+    @R4
+    D=M
+    @END_PROGRAM
+    D;JEQ
+    @NEGATE_RESULT
+    0;JMP
+
+(NEGATE_RESULT)
+    @R0
+    D=M
+    M=-D
+(ZR)
+(END_PROGRAM)
+    @END_PROGRAM
+    0;JMP
