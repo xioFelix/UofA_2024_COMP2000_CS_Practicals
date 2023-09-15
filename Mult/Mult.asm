@@ -14,29 +14,27 @@
 @R0
 M=0
 
-// Load R1 into D register
+// Check if R1 eq to 0, if so, jump to END
 @R1
 D=M
 @ZR
 D;JEQ
 
-// Check if R1 is negative, if so, negate it and store the negated value in R3, also set R4 to 1 to indicate a sign change
+// Check if R1 is negative, if so, negate it
 @R4
 M=0
-@R3
-M=D
 @R1_NEG
 D;JLT
 @CHECK_R2_NEG
 0;JMP
 
 (R1_NEG)
-@R3
+@R1
 M=-M
 @R4
 M=1
 
-// Check if R2 is negative, if so, negate it and toggle R4 to indicate a sign change
+// Check if R2 is negative, if so, negate it
 (CHECK_R2_NEG)
 @R2
 D=M
@@ -44,7 +42,7 @@ D=M
 D;JEQ
 @R2_NEG
 D;JLT
-@MULTIPLY_LOOP
+@Check_swap
 0;JMP
 
 (R2_NEG)
@@ -55,10 +53,34 @@ D=M
 M=D-1
 M=-M
 
+(Check_swap)
+@R2
+D=M
+@R1
+D=M-D
+@SWAP
+D;JLT
+@MULTIPLY_LOOP
+0;JMP
+
+(SWAP)
+@R2
+D=M
+@R3
+M=D
+@R1
+D=M
+@R2
+M=D
+@R3
+D=M
+@R1
+M=D
+
 // Start of the multiplication loop
 (MULTIPLY_LOOP)
-    // Add R3 (which holds the value of R1) to R0
-    @R3
+    // Add abs(R1) to R0
+    @R1
     D=M
     @R0
     M=D+M
@@ -93,6 +115,7 @@ M=-M
     D=M
     M=-D
 (ZR)
+    // End of program
 (END_PROGRAM)
     @END_PROGRAM
     0;JMP
