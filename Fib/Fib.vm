@@ -3,3 +3,34 @@
 
 // Put your code here.
 
+function Fib.fib 0
+  push argument 0
+  push constant 2
+  lt
+  if-goto BASE_CASE
+
+  // Recursive case: Fib.fib(n-1) + Fib.fib(n-2)
+  push argument 0
+  push constant 1
+  sub
+  call Fib.fib 1
+  push argument 0
+  push constant 2
+  sub
+  call Fib.fib 1
+  add
+  return
+
+label BASE_CASE
+  // Base cases: Fib.fib(0) = 0 and Fib.fib(1) = 1
+  push argument 0
+  push constant 1
+  eq
+  if-goto ONE_CASE
+  
+  push constant 0
+  return
+
+label ONE_CASE
+  push constant 1
+  return
