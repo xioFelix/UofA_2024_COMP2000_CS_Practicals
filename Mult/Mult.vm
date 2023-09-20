@@ -8,70 +8,74 @@
 push constant 0
 pop local 0
 
-// Initialize static variable 4 to 0
+// Initialize static variable 4 to 0 (used to store sign information)
 push constant 0
-pop local 4
+pop static 4
 
 // Load static variable 0 (x) onto the stack
 push static 0
 
-// Store the value of x in a new static variable (2) for loop control
-pop static 2
-
-label LOOP_START
-// Check if static variable 2 (x) is 0, if so, end the loop
-push static 2
-push constant 0
-eq
-if-goto LOOP_END
-
-// Check the sign of static variable 0 (x), if negative, store the sign in a new static variable (3) and make it positive, also store the simbol in a new static variable (4)
+// Check the sign of static variable 0 (x), if negative, store the sign in a new static variable (3) and make it positive, also store the symbol in a new static variable (4)
 push static 0
 push constant 0
 lt
 if-goto NEGATIVE_X
-push constant 0
+push static 0
 pop static 3
 goto POSITIVE_X
 
 label NEGATIVE_X
-push constant 1
-pop static 3
+// push static 0
 neg
-pop static 0
+pop static 3
+push static 4
 push constant 1
+add
 pop static 4
+goto Check_Y
 
 label POSITIVE_X
+// Store the absolute value of x in a new static variable (2) for loop control
+pop static 5
+
+label Check_Y
+// Record the sign of static variable 1 (y) in static variable (4)
+// push static 1
+// push constant 0
+// lt
+// if-goto NEGATIVE_Y
+goto LOOP_START
+
+// label NEGATIVE_Y
+// push static 4
+// push constant 1
+// sub
+// pop static 4
+
+label LOOP_START
+// Check if static variable 3 (x) is 0, if so, end the loop
+push static 3
+push constant 0
+eq
+if-goto LOOP_END
+
 // Add y to a
 push local 0
 push static 1
 add
 pop local 0
 
-// Record the sign of y in a new static variable (4)
-push static 1
-push constant 0
-lt
-if-goto NEGATIVE_Y
-
-label NEGATIVE_Y
-push static 4
+// Decrease the value of static variable 3 |x| by 1
+push static 3
 push constant 1
 sub
-pop static 4
-
-// Decrease the value of static variable 2 (x) by 1
-push static 2
-push constant 1
-sub
-pop static 2
+pop static 3
 
 // Repeat the loop
 goto LOOP_START
 
 label LOOP_END
-// Change the sign, if static variable 4 (x) is not equl to 0
+// Change the sign of the result if necessary based on the value in static variable 4
 push static 4
 push constant 0
 eq
@@ -79,7 +83,6 @@ if-goto END
 push local 0
 neg
 pop local 0
-
 
 label END
 goto END
