@@ -3,3 +3,51 @@
 
 // Put your code here.
 
+function ArrMax.arrMax 2
+
+// Initialize max to a very small number
+push constant 32767
+not
+pop local 0
+
+// Initialize counter to 0
+push constant 0
+pop local 1
+
+label LOOP_START
+  push local 1
+  push argument 1
+  lt
+  if-goto COMPARE
+  goto END_LOOP
+
+label COMPARE
+  // Get the current element
+  push argument 0
+  push local 1
+  add
+  pop pointer 1
+  push that 0
+
+  // Compare with the current max
+  push local 0
+  gt
+  if-goto UPDATE_MAX
+  goto INCREMENT_COUNTER
+
+label UPDATE_MAX
+  // Update max
+  push that 0
+  pop local 0
+
+label INCREMENT_COUNTER
+  // Increment counter
+  push local 1
+  push constant 1
+  add
+  pop local 1
+  goto LOOP_START
+
+label END_LOOP
+  push local 0
+  return
