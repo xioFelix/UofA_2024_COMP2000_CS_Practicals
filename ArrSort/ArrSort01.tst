@@ -5,7 +5,7 @@
 load ArrSort.asm,
 output-file ArrSort01.out,
 compare-to ArrSort01.cmp,
-output-list RAM[0]%D2.6.2 RAM[1]%D2.6.2 RAM[2]%D2.6.2 RAM[20]%D2.6.2 RAM[21]%D2.6.2 RAM[22]%D2.6.2 RAM[23]%D2.6.2;
+output-list RAM[0]%D2.6.2 RAM[1]%D2.6.2 RAM[2]%D2.6.2 RAM[40]%D2.6.2 RAM[41]%D2.6.2 RAM[42]%D2.6.2 RAM[43]%D2.6.2;
 
 set PC 0,
 set RAM[0]  0,  // Set R0
