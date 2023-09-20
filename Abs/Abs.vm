@@ -1,0 +1,34 @@
+// Calculates y = |x|
+// x & y are static variables
+
+// Put your code here.
+
+// Load static variable 0 (x) onto the stack
+push static 0
+
+// Load 0 onto the stack to compare with x
+push constant 0
+
+// Check if x < 0
+lt
+
+// If x < 0, negate x to get the absolute value
+if-goto NEG
+
+push static 0
+// Store the result in static variable 1 (y)
+pop static 1
+
+// If x >= 0, just store x as the result (y = x)
+goto END
+
+label NEG
+push static 0
+// Negate x to get the absolute value (y = -x)
+neg
+
+// Store the result in static variable 1 (y)
+pop static 1
+
+label END
+goto END

@@ -1,0 +1,25 @@
+// Calculates x = (a + b) - x
+// a & b are local variables
+// x is a static variable
+
+// Put your code here.
+
+// Load local variable 0 (a) onto the stack
+push local 0
+
+// Load local variable 1 (b) onto the stack
+push local 1
+
+// Add the top two values on the stack (a + b)
+add
+
+// Load static variable 0 (x) onto the stack
+push static 0
+
+// Subtract the top value on the stack (x) from the second to top value on the stack ((a + b) - x)
+sub
+
+pop static 0
+
+label END
+goto END
