@@ -64,6 +64,12 @@ D;JLT
 
 (POSITIVE_CHECK)
 // Compare the current element with the minimum value stored in R0 (for positive numbers)
+@ARRAY_BASE
+A=M
+D=M
+@EDGE
+D;JGT
+(BACK)
 @R0
 D=M-D
 @UPDATE_MIN
@@ -82,6 +88,7 @@ A=M
 D=M-D
 @MIN
 D;JEQ
+
 @ARRAY_BASE
 A=M
 D=M
@@ -98,6 +105,13 @@ D;JLE
 @DECREMENT_COUNTER
 0;JMP
 
+(EDGE)
+@R0
+D=M
+@DECREMENT_COUNTER
+D;JLT
+@BACK
+0;JMP
 
 // Jump back to the positive check if the value in R0 is positive
 @POSITIVE_CHECK
