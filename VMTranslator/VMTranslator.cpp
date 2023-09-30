@@ -36,8 +36,8 @@ string VMTranslator::vm_push(string segment, int offset) {
                  "\n" + "A=D+A\n" +  // compute the effective address
                  "D=M\n";            // load value into D register
     }
-    asm_code += "@SP\n" +
-                string("M=D\n") +             // push D register value onto the stack
+    asm_code += "@SP\n" + string("A=M\n") +
+                "M=D\n" +             // push D register value onto the stack
                 "@SP\n" + "AM=M+1\n";  // increment stack pointer
     return asm_code;
 }
