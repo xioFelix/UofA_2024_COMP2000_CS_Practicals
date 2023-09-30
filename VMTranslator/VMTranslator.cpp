@@ -203,7 +203,7 @@ string VMTranslator::vm_if(string label) {
 string VMTranslator::vm_function(string function_name, int n_vars) {
   string asm_code = "";
   asm_code = "@" + to_string(n_vars) + "\n" + "D=A\n" + "(" + function_name +
-             ")" + "\n" + "@" + function_name + "\n" + "\n"+ "AM = M + 1"+ "\n"+ "A = A - 1"+ "\n"+ "M = 0" + "\n" + "D = D - 1;JEQ";
+             ")" + "\n" + "@" + function_name + "\n" + "@SP" + "AM = M + 1"+ "\n"+ "A = A - 1"+ "\n"+ "M = 0" + "\n" + "D = D - 1;JEQ";
 
   return asm_code;
 }
