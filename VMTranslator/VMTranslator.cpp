@@ -201,10 +201,10 @@ string VMTranslator::vm_if(string label) {
 
 /** Generate Hack Assembly code for a VM function operation */
 string VMTranslator::vm_function(string function_name, int n_vars) {
-  string asm_code = "(" + function_name + ")\n";
-  for (int i = 0; i < n_vars; i++) {
-    asm_code += "@SP\n" + string("A=M\n") + "M=0\n" + "@SP\n" + "M=M+1\n";
-  }
+  string asm_code = "";
+  asm_code = "@" + to_string(n_vars) + "\n" + "D=A\n" + "(" + function_name +
+             ")" + "\n" + "@" + function_name + "\n" + "\n"+ "AM = M + 1"+ "\n"+ "A = A - 1"+ "\n"+ "M = 0" + "\n" + "D = D - 1;JEQ";
+
   return asm_code;
 }
 
