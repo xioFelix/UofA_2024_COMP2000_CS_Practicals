@@ -23,7 +23,20 @@ string VMTranslator::vm_push(string segment, int offset) {
     string asm_code;
     if (segment == "constant") {  // Handling constant values
       asm_code = "@" + to_string(offset) + "\n" +
-                 "D=A\n";  // load constant into D register
+                 "D=A\n" + "@SP\n" + "AM=M+1\n" + "A=A-1\n" + "M=D\n";  // load constant into D register
+    }
+    else if (segment == "static") {  // Handling static values
+      int newoffset = 16 + offset;
+      asm_code = "@" + to_string(newoffset) + "\n" + "D=M\n" + "@SP\n" +
+                 "AM=M+1\n" + "A=A-1\n" + "M=D\n";
+    } else if (segment == "pointer") {  // Handling static values
+      int newoffset = 3 + offset;
+      asm_code = "@" + to_string(newoffset) + "\n" + "D=M\n" + "@SP\n" +
+                 "AM=M+1\n" + "A=A-1\n" + "M=D\n";
+    } else if (segment == "temp") {  // Handling static values
+      int newoffset = 5 + offset;
+      asm_code = "@" + to_string(newoffset) + "\n" + "D=M\n" + "@SP\n" +
+                 "AM=M+1\n" + "A=A-1\n" + "M=D\n";
     } else {
       // Handle other segments like local, argument, this, that, etc.
       string segment_base;
@@ -31,7 +44,16 @@ string VMTranslator::vm_push(string segment, int offset) {
         segment_base = "LCL";
       else if (segment == "argument")
         segment_base = "ARG";
-      // ... handle other segments
+      else if (segment == "this")
+        segment_base = "THIS";
+      else if (segment == "argument")
+        segment_base = "that";
+      else if (segment == "THAT")
+        segment_base = "ARG";
+      else if (segment == "argument")
+        segment_base = "ARG";
+      else if (segment == "argument")
+        segment_base = "ARG";
       asm_code = "@" + segment_base + "\n" + "D=M\n" + "@" + to_string(offset) +
                  "\n" + "A=D+A\n" +  // compute the effective address
                  "D=M\n";            // load value into D register
@@ -43,21 +65,55 @@ string VMTranslator::vm_push(string segment, int offset) {
 }
 
 /** Generate Hack Assembly code for a VM pop operation */
-string VMTranslator::vm_pop(string segment, int offset) {
-    string asm_code, segment_base;
-    if (segment == "local")
-      segment_base = "LCL";
-    else if (segment == "argument")
-      segment_base = "ARG";
-    // ... handle other segments
+string VMTranslator::vm_pop(string segment, int index) {
+    string asm_code;
 
-    asm_code = "@" + segment_base + "\n" + "D=M\n" + "@" + to_string(offset) +
-               "\n" + "D=D+A\n" +      // compute the effective address
-               "@R13\n" + "M=D\n" +    // store the effective address in R13
-               "@SP\n" + "AM=M-1\n" +  // decrement stack pointer and load top
-                                       // of stack into D register
-               "D=M\n" + "@R13\n" + "A=M\n" +
-               "M=D\n";  // store D register value at the effective address
+    if (segment == "local") {
+      asm_code += "@LCL\n";
+      asm_code += "D=M\n";
+    } else if (segment == "argument") {
+      asm_code += "@ARG\n";
+      asm_code += "D=M\n";
+    } else if (segment == "this") {
+      asm_code += "@THIS\n";
+      asm_code += "D=M\n";
+    } else if (segment == "that") {
+      asm_code += "@THAT\n";
+      asm_code += "D=M\n";
+    } else if (segment == "static") {
+      asm_code += "@" + to_string(16 + index) +
+                  "\n";
+      asm_code +=
+          "D=A\n";  // For static, D will hold the address of the variable
+    } else if (segment == "pointer") {
+      asm_code += "@" + to_string(3 + index) +
+                  "\n";  // Pointer maps to addresses 3 (THIS) and 4 (THAT)
+      asm_code += "D=A\n";
+    } else if (segment == "temp") {
+      asm_code +=
+          "@" + to_string(5 + index) + "\n";  // Temp maps to addresses 5 to 12
+      asm_code += "D=A\n";
+    }
+
+    if (segment != "static") {
+      asm_code += "@" + to_string(index) + "\n";
+      asm_code += "D=D+A\n";  // For non-static segments, D now holds the
+                              // effective address
+    }
+
+    asm_code += "@R13\n";  // Use R13 as temporary register to store the
+                           // effective address
+    asm_code += "M=D\n";
+
+    asm_code += "@SP\n";
+    asm_code += "AM=M-1\n";  // Decrement SP and put the address of the top of
+                             // the stack in A
+    asm_code += "D=M\n";     // D holds the value at the top of the stack
+
+    asm_code += "@R13\n";
+    asm_code += "A=M\n";  // A holds the effective address (from R13)
+    asm_code += "M=D\n";  // Store the value in D to the effective address
+
     return asm_code;
 }
 
