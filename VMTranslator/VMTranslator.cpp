@@ -40,7 +40,7 @@ string VMTranslator::vm_pop(string segment, int index) {
     string asmCode;
     if (segment == "local") {
       // Handle local segment pop
-      asmCode = "@SP\n" + "M=M-1\n" + "A=M\n" + "D=M\n" + "@" +
+      asmCode = "@SP\n" + string("M=M-1\n") + "A=M\n" + "D=M\n" + "@" +
                 to_string(index) + "\n" + "D=D+A\n" + "@LCL\n" + "A=D+M\n" +
                 "M=D\n";
     }  // Add additional else if statements for other segments
@@ -125,7 +125,7 @@ string VMTranslator::vm_goto(string labelName) {
 
 /** Generate Hack Assembly code for a VM if-goto operation */
 string VMTranslator::vm_if(string labelName) {
-    return "@SP\n" + "AM=M-1\n" + "D=M\n" + "@" + labelName + "\n" + "D;JNE\n";
+    return "@SP\n" + string("AM=M-1\n") + "D=M\n" + "@" + labelName + "\n" + "D;JNE\n";
 }
 
 /** Generate Hack Assembly code for a VM function operation */
@@ -134,7 +134,7 @@ string VMTranslator::vm_function(string functionName, int numLocals) {
         "(" + functionName + ")\n";  // Label for the function entry
     for (int i = 0; i < numLocals; i++) {
       asmCode += "@SP\n"  // Initialize local variables to 0
-                 + "A=M\n" + "M=0\n" + "@SP\n" + "M=M+1\n";
+                 + string("A=M\n") + "M=0\n" + "@SP\n" + "M=M+1\n";
     }
     return asmCode;
 }
@@ -163,7 +163,7 @@ string VMTranslator::vm_call(string functionName, int numArgs) {
 
 /** Generate Hack Assembly code for a VM return operation */
 string VMTranslator::vm_return() {
-    string asmCode = "@LCL\n" + "D=M\n" + "@R13\n"              // FRAME is R13
+    string asmCode = "@LCL\n" + string("D=M\n") + "@R13\n"              // FRAME is R13
                      + "M=D\n"                                  // FRAME=LCL
                      + "@5\n" + "A=D-A\n" + "D=M\n" + "@R14\n"  // RET is R14
                      + "M=D\n"  // RET=*(FRAME-5)
