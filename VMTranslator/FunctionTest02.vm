@@ -1,0 +1,3 @@
+function AnotherFunction 2 // AnotherFunction has 2 local variables
+push local 1 // Pushes the second local variable of AnotherFunction to the stack
+return

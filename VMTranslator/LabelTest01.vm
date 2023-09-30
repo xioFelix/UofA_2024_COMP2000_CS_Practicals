@@ -1,0 +1,4 @@
+label START
+goto END
+push constant 1
+label END

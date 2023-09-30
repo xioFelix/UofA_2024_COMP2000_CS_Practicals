@@ -1,0 +1,5 @@
+push constant 1
+if-goto TRUE_LABEL
+push constant 2
+label TRUE_LABEL
+push constant 1

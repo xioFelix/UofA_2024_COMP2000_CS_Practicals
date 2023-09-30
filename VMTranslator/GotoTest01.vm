@@ -1,0 +1,5 @@
+label START_POINT
+goto END_POINT
+push constant 2
+label END_POINT
+push constant 1

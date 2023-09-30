@@ -1,0 +1,7 @@
+function Start 0
+call AnotherFunction 2 // Calls AnotherFunction with 2 arguments
+return
+
+function AnotherFunction 2
+push argument 1 // Pushes the second argument of AnotherFunction to the stack
+return

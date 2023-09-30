@@ -1,0 +1,7 @@
+function Main 0
+call MyFunction 1 // Calls MyFunction with 1 argument
+return
+
+function MyFunction 3
+push constant 10
+return

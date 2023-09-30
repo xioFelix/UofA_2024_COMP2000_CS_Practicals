@@ -1,0 +1,3 @@
+function MyFunction 3 // MyFunction has 3 local variables
+push local 0 // Pushes the first local variable of MyFunction to the stack
+return

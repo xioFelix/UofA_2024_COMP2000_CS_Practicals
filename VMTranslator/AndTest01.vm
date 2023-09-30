@@ -1,0 +1,3 @@
+push constant 1 // binary: 0000000000000001
+push constant 3 // binary: 0000000000000011
+and

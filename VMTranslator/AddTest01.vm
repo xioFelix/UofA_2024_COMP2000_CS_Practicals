@@ -1,0 +1,4 @@
+// AddTest01.vm
+push constant 10
+push constant 20
+add

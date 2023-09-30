@@ -1,0 +1,3 @@
+label LOOP_START
+push constant 1
+goto LOOP_START

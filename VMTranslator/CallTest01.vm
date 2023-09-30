@@ -1,0 +1,7 @@
+function Main 0
+call MyFunction 1 // Calls MyFunction with 1 argument
+return
+
+function MyFunction 3
+push argument 0 // Pushes the first argument of MyFunction to the stack
+return
