@@ -85,18 +85,24 @@ string VMTranslator::vm_pop(string segment, int index) {
                   "\n";
       asm_code +=
           "D=A\n";  // For static, D will hold the address of the variable
-    } else if (segment == "pointer") {
-      asm_code += "@" + to_string(3 + index) +
-                  "\n";  // Pointer maps to addresses 3 (THIS) and 4 (THAT)
-      asm_code += "D=A\n";
-    } else if (segment == "temp") {
-      asm_code +=
-          "@" + to_string(5 + index) + "\n";  // Temp maps to addresses 5 to 12
-      asm_code += "D=A\n";
+    }
+    else if (segment == "pointer") {
+      if (index == 0) {
+        // THIS register
+        return "@THIS\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n";
+      } else if (index == 1) {
+        // THAT register
+        return "@THAT\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n";
+      }
     }
 
-    if (segment != "static") {
-      asm_code += "@" + to_string(index) + "\n";
+    else if (segment == "temp") {
+      return "@" + to_string(5 + index) + "\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n";
+    }
+
+    else if (segment != "static") {
+      int newindex = 16 + index;
+      asm_code += "@" + to_string(newindex) + "\n";
       asm_code += "D=D+A\n";  // For non-static segments, D now holds the
                               // effective address
     }
