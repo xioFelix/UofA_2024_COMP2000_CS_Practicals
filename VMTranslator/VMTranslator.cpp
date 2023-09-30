@@ -26,7 +26,7 @@ string VMTranslator::vm_push(string segment, int index) {
                 + "D=A\n"                      // D = A
                 + "@SP\n" + "A=M\n"            // go to the top of the stack
                 + "M=D\n"                      // set the top of the stack to D
-                + "@SP\n" + "M=M+1\n";         // increment the stack pointer
+                + "@SP\n" + "AM=M+1\n";         // increment the stack pointer
     } else if (segment == "local") {
       // Handle local segment push
       asmCode = "@" + to_string(index) + "\n" + "D=A\n" + "@LCL\n" + "A=D+M\n" +
@@ -40,7 +40,7 @@ string VMTranslator::vm_pop(string segment, int index) {
     string asmCode;
     if (segment == "local") {
       // Handle local segment pop
-      asmCode = "@SP\n" + string("M=M-1\n") + "A=M\n" + "D=M\n" + "@" +
+      asmCode = "@SP\n" + string("AM=M-1\n") + "D=M\n" + "@" +
                 to_string(index) + "\n" + "D=D+A\n" + "@LCL\n" + "A=D+M\n" +
                 "M=D\n";
     }  // Add additional else if statements for other segments
