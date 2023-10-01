@@ -30,6 +30,9 @@ string VMTranslator::vm_push(string segment, int offset) {
     } else if (segment == "temp") {  // Handling temp values
       int newoffset = 5 + offset;
       asm_code = "@" + to_string(newoffset) + "\n" + "D=M\n";
+    } else if (segment == "static") {  // Handling static values
+      int newoffset = 16 + offset;
+      asm_code = "@" + to_string(newoffset) + "\n" + "D=M\n";
     } else {
       // Handle other segments like local, argument, this, that, etc.
       string segment_base;
