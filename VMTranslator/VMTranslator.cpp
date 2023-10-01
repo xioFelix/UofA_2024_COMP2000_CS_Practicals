@@ -83,21 +83,16 @@ string VMTranslator::vm_pop(string segment, int offset) {
   } else if (segment == "pointer") {
       int newoffset = 3 + offset;
       asm_code += "@SP\n" + string("AM=M-1\n") +
-                  "D=M\n"
-                  "@" +
+                  "D=M\n"+
                   "@" + to_string(newoffset) + "\n" + "M=D\n";
     } else if (segment == "temp") {
       int newoffset = 5 + offset;
-      asm_code += "@SP\n" + string("AM=M-1\n") +
-                  "D=M\n"
-                  "@" +
-                  "@" + to_string(newoffset) + "\n" + "M=D\n";
+      asm_code += "@SP\n" + string("AM=M-1\n") + "D=M\n" + "@" +
+                  to_string(newoffset) + "\n" + "M=D\n";
     } else if (segment == "static") {
       int newoffset = 16 + offset;
-      asm_code += "@SP\n" + string("AM=M-1\n") +
-                  "D=M\n"
-                  "@" +
-                  "@" + to_string(newoffset) + "\n" + "M=D\n";
+      asm_code += "@SP\n" + string("AM=M-1\n") + "D=M\n" + "@" +
+                  to_string(newoffset) + "\n" + "M=D\n";
   }
   return asm_code;
 }
