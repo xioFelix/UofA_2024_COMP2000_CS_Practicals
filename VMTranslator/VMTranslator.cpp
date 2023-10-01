@@ -57,30 +57,30 @@ string VMTranslator::vm_pop(string segment, int offset) {
   string asm_code, segment_base;
   if (segment == "local") {
     segment_base = "LCL";
-    asm_code += "@" + segment_base + "\n" + "D=M\n" + "@" + to_string(offset) +
-                "\n" + "A=D+M\n" + "D=A\n" + "@8\n" + "M=D\n" + "@SP\n" +
-                "AM=M-1\n" + "D=M\n" + "@8\n" + "A=M\n" +
+    asm_code += "@" + to_string(offset) +
+                "\n" + "D=A\n" +"@" +
+                segment_base + "\n" +"A=D+M\n" + "D=A\n" + "@8\n" +
+                "M=D\n" + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@8\n" + "A=M\n" +
                 "M=D\n";  // pop value from stack;
   } else if (segment == "argument") {
     segment_base = "ARG";
-    asm_code += "@" + segment_base + "\n" + "D=M\n" + "@" + to_string(offset) +
+    asm_code += "@" + to_string(offset) + "\n" + "D=A\n" + "@" + segment_base +
                 "\n" + "A=D+M\n" + "D=A\n" + "@8\n" + "M=D\n" + "@SP\n" +
                 "AM=M-1\n" + "D=M\n" + "@8\n" + "A=M\n" +
                 "M=D\n";  // pop value from stack;
   } else if (segment == "this") {
     segment_base = "THIS";
-    asm_code += "@" + segment_base + "\n" + "D=M\n" + "@" + to_string(offset) +
+    asm_code += "@" + to_string(offset) + "\n" + "D=A\n" + "@" + segment_base +
                 "\n" + "A=D+M\n" + "D=A\n" + "@8\n" + "M=D\n" + "@SP\n" +
                 "AM=M-1\n" + "D=M\n" + "@8\n" + "A=M\n" +
                 "M=D\n";  // pop value from stack;
   } else if (segment == "that") {
     segment_base = "THAT";
-    asm_code += "@" + segment_base + "\n" + "D=M\n" + "@" + to_string(offset) +
+    asm_code += "@" + to_string(offset) + "\n" + "D=A\n" + "@" + segment_base +
                 "\n" + "A=D+M\n" + "D=A\n" + "@8\n" + "M=D\n" + "@SP\n" +
                 "AM=M-1\n" + "D=M\n" + "@8\n" + "A=M\n" +
-                "M=D\n";  // pop value from stack
-  } else {
-    if (segment == "pointer") {
+                "M=D\n";  // pop value from stack;
+  } else if (segment == "pointer") {
       int newoffset = 3 + offset;
       asm_code += "@SP\n" + string("AM=M-1\n") +
                   "D=M\n"
@@ -98,7 +98,6 @@ string VMTranslator::vm_pop(string segment, int offset) {
                   "D=M\n"
                   "@" +
                   "@" + to_string(newoffset) + "\n" + "M=D\n";
-    }
   }
   return asm_code;
 }
