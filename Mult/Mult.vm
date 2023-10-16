@@ -1,59 +1,88 @@
 // Calculates a = x*y
 // a is a local variable
 // x & y are static variables
+
 // Put your code here.
 
-push static 1
-pop temp 2
-
-push static 1
+// Initialize a to 0
 push constant 0
-lt 
-if-goto NEGATIVE
+pop local 0
 
-label NEGATIVE_END
-
+// Initialize static variable 4 to 0 (used to store sign information)
 push constant 0
-pop local 0 // a = 0
+pop static 4
 
-push constant 0 
-pop temp 0  // count i=0
-
-label LOOP
-push temp 0
-push temp 2
-eq // i==y
-if-goto CHECK
-
-push local 0
+// Load static variable 0 (x) onto the stack
 push static 0
-add // a+x
-pop local 0 // a=a+x
 
-push constant 1
-push temp 0
-add // i++
-pop temp 0 // i=i+1
-
-goto LOOP
-
-label CHECK
-push static 1
+// Check the sign of static variable 0 (x), if negative, store the sign in a new static variable (3) and make it positive, also store the symbol in a new static variable (4)
+push static 0
 push constant 0
-lt 
-if-goto NEGATIVE2
+lt
+if-goto NEGATIVE_X
+push static 0
+pop static 3
+goto POSITIVE_X
 
-label END
-goto END
+label NEGATIVE_X
+// push static 0
+neg
+pop static 3
+push static 4
+push constant 1
+add
+pop static 4
+goto Check_Y
 
-label NEGATIVE2
+label POSITIVE_X
+// Store the absolute value of x in a new static variable (2) for loop control
+pop static 5
+
+label Check_Y
+// Record the sign of static variable 1 (y) in static variable (4)
+// push static 1
+// push constant 0
+// lt
+// if-goto NEGATIVE_Y
+goto LOOP_START
+
+// label NEGATIVE_Y
+// push static 4
+// push constant 1
+// sub
+// pop static 4
+
+label LOOP_START
+// Check if static variable 3 (x) is 0, if so, end the loop
+push static 3
+push constant 0
+eq
+if-goto LOOP_END
+
+// Add y to a
+push local 0
+push static 1
+add
+pop local 0
+
+// Decrease the value of static variable 3 |x| by 1
+push static 3
+push constant 1
+sub
+pop static 3
+
+// Repeat the loop
+goto LOOP_START
+
+label LOOP_END
+// Change the sign of the result if necessary based on the value in static variable 4
+push static 4
+push constant 0
+eq
+if-goto END
 push local 0
 neg
 pop local 0
-goto END
 
-label NEGATIVE
-push static 1
-neg
-pop temp 2
-goto NEGATIVE_END
+label END
+goto END
