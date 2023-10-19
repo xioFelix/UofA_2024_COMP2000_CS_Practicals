@@ -231,15 +231,9 @@ ParseTree* CompilerParser::compileSubroutineBody() {
     subroutineBodyTree->addChild(compileVarDec());
   }
 
-  // Process statements until we encounter a closing curly brace
-  while (!have("symbol", "}")) {
-    if (have("keyword", "let") || have("keyword", "if") ||
-        have("keyword", "while") || have("keyword", "do") ||
-        have("keyword", "return")) {
-      subroutineBodyTree->addChild(compileStatements());
-    } else {
-      throw ParseException();
-    }
+  // Check if the next token is not "}" before processing statements
+  if (!have("symbol", "}")) {
+    subroutineBodyTree->addChild(compileStatements());
   }
 
   // The subroutine body should end with a right curly brace
