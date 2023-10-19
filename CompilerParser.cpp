@@ -628,5 +628,5 @@ Token* CompilerParser::mustBe(std::string expectedType,
  * You can use this ParseException with `throw ParseException();`
  */
 const char* ParseException::what() {
-  return "ParseError (the program doesn't begin with a class)";
+  return "An Exception occurred while parsing!";
 }
