@@ -210,23 +210,12 @@ ParseTree* CompilerParser::compileSubroutineBody() {
 
   // Process zero or more variable declarations
   while (have("keyword", "var")) {
-    ParseTree* varDecTree = compileVarDec();
-    if (!varDecTree) {
-      throw ParseException();
-    }
-    subroutineBodyTree->addChild(varDecTree);
+    subroutineBodyTree->addChild(compileVarDec());
   }
 
   // Check if the next token is not "}" before processing statements
   if (!have("symbol", "}")) {
-    ParseTree* statementsTree = compileStatements();
-    if (!statementsTree) {
-      throw ParseException();
-    }
-    subroutineBodyTree->addChild(statementsTree);
-  } else {
-    throw ParseException();  // This line added to handle the case where "}" is
-                             // not found
+    subroutineBodyTree->addChild(compileStatements());
   }
 
   // The subroutine body should end with a right curly brace
