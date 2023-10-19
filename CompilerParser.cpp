@@ -390,25 +390,40 @@ ParseTree* CompilerParser::compileWhile() {
   // Create a new parse tree for the while statement
   ParseTree* whileTree = new ParseTree("whileStatement", "");
 
-  // A while statement should start with the keyword 'while'
+  // 'while' keyword
+  if (!have("keyword", "while")) {
+    throw ParseException();
+  }
   whileTree->addChild(mustBe("keyword", "while"));
 
-  // Followed by a left parenthesis
+  // '(' symbol
+  if (!have("symbol", "(")) {
+    throw ParseException();
+  }
   whileTree->addChild(mustBe("symbol", "("));
 
-  // Followed by an expression
+  // Expression
   whileTree->addChild(compileExpression());
 
-  // Followed by a right parenthesis
+  // ')' symbol
+  if (!have("symbol", ")")) {
+    throw ParseException();
+  }
   whileTree->addChild(mustBe("symbol", ")"));
 
-  // Followed by a left curly brace
+  // '{' symbol
+  if (!have("symbol", "{")) {
+    throw ParseException();
+  }
   whileTree->addChild(mustBe("symbol", "{"));
 
-  // Followed by statements
+  // Statements
   whileTree->addChild(compileStatements());
 
-  // Followed by a right curly brace
+  // '}' symbol
+  if (!have("symbol", "}")) {
+    throw ParseException();
+  }
   whileTree->addChild(mustBe("symbol", "}"));
 
   return whileTree;
