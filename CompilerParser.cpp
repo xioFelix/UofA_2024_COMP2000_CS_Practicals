@@ -165,15 +165,19 @@ ParseTree* CompilerParser::compileParameterList() {
   // Create a new parse tree for the parameter list
   ParseTree* parameterListTree = new ParseTree("parameterList", "");
 
-  // Process parameters until we encounter a closing parenthesis
-  while (!have("symbol", ")")) {
+  // Check if the parameter list is empty
+  if (have("symbol", ")")) {
+    return parameterListTree;
+  }
+
+  // Process parameters
+  do {
     // Get the type of the parameter
     if (have("keyword", "int") || have("keyword", "char") ||
         have("keyword", "boolean")) {
       parameterListTree->addChild(current());
       next();
-    } else if (have("identifier",
-                    "")) {  // We don't need to match the value for identifiers
+    } else if (have("identifier", "")) {
       parameterListTree->addChild(current());
       next();
     } else {
@@ -181,15 +185,13 @@ ParseTree* CompilerParser::compileParameterList() {
     }
 
     // Get the name of the parameter
-    parameterListTree->addChild(mustBe(
-        "identifier", ""));  // No need to match the value for identifiers
+    parameterListTree->addChild(mustBe("identifier", ""));
 
     // If there's a comma, we expect another parameter, so we add the comma and
     // continue
-    if (have("symbol", ",")) {
-      parameterListTree->addChild(mustBe("symbol", ","));
-    }
-  }
+  } while (have("symbol", ","));
+
+  mustBe("symbol", ")");
 
   return parameterListTree;
 }
