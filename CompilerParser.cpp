@@ -206,11 +206,7 @@ ParseTree* CompilerParser::compileSubroutineBody() {
   ParseTree* subroutineBodyTree = new ParseTree("subroutineBody", "");
 
   // The subroutine body should start with a left curly brace
-  Token* leftCurlyBrace = mustBe("symbol", "{");
-  if (!leftCurlyBrace) {
-    throw ParseException();
-  }
-  subroutineBodyTree->addChild(leftCurlyBrace);
+  subroutineBodyTree->addChild(mustBe("symbol", "{"));
 
   // Process zero or more variable declarations
   while (have("keyword", "var")) {
@@ -228,14 +224,13 @@ ParseTree* CompilerParser::compileSubroutineBody() {
       throw ParseException();
     }
     subroutineBodyTree->addChild(statementsTree);
+  } else {
+    throw ParseException();  // This line added to handle the case where "}" is
+                             // not found
   }
 
   // The subroutine body should end with a right curly brace
-  Token* rightCurlyBrace = mustBe("symbol", "}");
-  if (!rightCurlyBrace) {
-    throw ParseException();
-  }
-  subroutineBodyTree->addChild(rightCurlyBrace);
+  subroutineBodyTree->addChild(mustBe("symbol", "}"));
 
   return subroutineBodyTree;
 }
