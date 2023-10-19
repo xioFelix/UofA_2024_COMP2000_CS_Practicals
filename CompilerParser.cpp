@@ -294,23 +294,33 @@ ParseTree* CompilerParser::compileVarDec() {
 ParseTree* CompilerParser::compileStatements() {
   // Create a new parse tree for the series of statements
   ParseTree* statementsTree = new ParseTree("statements", "");
+  bool hasStatements = false;
 
   // Process statements until we encounter a character that doesn't start a
   // valid statement
   while (true) {
     if (have("keyword", "let")) {
       statementsTree->addChild(compileLet());
+      hasStatements = true;
     } else if (have("keyword", "if")) {
       statementsTree->addChild(compileIf());
+      hasStatements = true;
     } else if (have("keyword", "while")) {
       statementsTree->addChild(compileWhile());
+      hasStatements = true;
     } else if (have("keyword", "do")) {
       statementsTree->addChild(compileDo());
+      hasStatements = true;
     } else if (have("keyword", "return")) {
       statementsTree->addChild(compileReturn());
+      hasStatements = true;
     } else {
       break;
     }
+  }
+
+  if (!hasStatements) {
+    throw ParseException();
   }
 
   return statementsTree;
