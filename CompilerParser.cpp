@@ -165,12 +165,19 @@ ParseTree* CompilerParser::compileParameterList() {
   // Create a new parse tree for the parameter list
   ParseTree* parameterListTree = new ParseTree("parameterList", "");
 
+  // // Check if the parameter list is empty
+  // if (have("symbol", ")")) {
+  //   return parameterListTree;
+  // }
+
   // Process parameters until we encounter a closing parenthesis
   while (!have("symbol", ")")) {
     // Get the type of the parameter
     if (have("keyword", "int") || have("keyword", "char") ||
-        have("keyword", "boolean") ||
-        have("identifier", current()->getValue())) {
+        have("keyword", "boolean")) {
+      parameterListTree->addChild(current());
+      next();
+    } else if (have("identifier", current()->getValue())) {
       parameterListTree->addChild(current());
       next();
     } else {
@@ -179,13 +186,11 @@ ParseTree* CompilerParser::compileParameterList() {
 
     // Get the name of the parameter
     parameterListTree->addChild(mustBe("identifier", current()->getValue()));
-    next();
 
     // If there's a comma, we expect another parameter, so we add the comma and
     // continue
     if (have("symbol", ",")) {
       parameterListTree->addChild(mustBe("symbol", ","));
-      next();
     }
   }
 
@@ -196,27 +201,42 @@ ParseTree* CompilerParser::compileParameterList() {
  * Generates a parse tree for a subroutine's body
  * @return a ParseTree
  */
-ParseTree* CompilerParser::compileSubroutineBody() {
-  // Create a new parse tree for the subroutine body
-  ParseTree* subroutineBodyTree = new ParseTree("subroutineBody", "");
+ParseTree* CompilerParser::compileSubroutine() {
+  // Create a new parse tree for the subroutine
+  ParseTree* subroutineTree = new ParseTree("subroutine", "");
 
-  // The subroutine body should start with a left curly brace
-  subroutineBodyTree->addChild(mustBe("symbol", "{"));
+  // A subroutine should start with 'constructor', 'function', or 'method'
+  subroutineTree->addChild(mustBe("keyword", current()->getValue()));
+  next();
 
-  // Process zero or more variable declarations
-  while (have("keyword", "var")) {
-    subroutineBodyTree->addChild(compileVarDec());
+  // Handle the return type
+  if (have("keyword", "void")) {
+    subroutineTree->addChild(mustBe("keyword", "void"));
+  } else if (have("keyword", "int") || have("keyword", "char") ||
+             have("keyword", "boolean") ||
+             have("identifier", current()->getValue())) {
+    subroutineTree->addChild(current());
+    next();
+  } else {
+    throw ParseException();
   }
 
-  // Check if the next token is not "}" before processing statements
-  if (!have("symbol", "}")) {
-    subroutineBodyTree->addChild(compileStatements());
-  }
+  // Add the subroutine name
+  subroutineTree->addChild(mustBe("identifier", current()->getValue()));
 
-  // The subroutine body should end with a right curly brace
-  subroutineBodyTree->addChild(mustBe("symbol", "}"));
+  // Add the opening parenthesis
+  subroutineTree->addChild(mustBe("symbol", "("));
 
-  return subroutineBodyTree;
+  // Add the parameter list
+  subroutineTree->addChild(compileParameterList());
+
+  // Add the closing parenthesis
+  subroutineTree->addChild(mustBe("symbol", ")"));
+
+  // Add the subroutine body
+  subroutineTree->addChild(compileSubroutineBody());
+
+  return subroutineTree;
 }
 
 /**
