@@ -170,14 +170,14 @@ ParseTree* CompilerParser::compileParameterList() {
     return parameterListTree;
   }
 
-  // Process parameters
-  do {
+  // Process parameters until we encounter a closing parenthesis
+  while (!have("symbol", ")")) {
     // Get the type of the parameter
     if (have("keyword", "int") || have("keyword", "char") ||
         have("keyword", "boolean")) {
       parameterListTree->addChild(current());
       next();
-    } else if (have("identifier", "")) {
+    } else if (have("identifier", current()->getValue())) {
       parameterListTree->addChild(current());
       next();
     } else {
@@ -185,11 +185,14 @@ ParseTree* CompilerParser::compileParameterList() {
     }
 
     // Get the name of the parameter
-    parameterListTree->addChild(mustBe("identifier", ""));
+    parameterListTree->addChild(mustBe("identifier", current()->getValue()));
 
     // If there's a comma, we expect another parameter, so we add the comma and
     // continue
-  } while (have("symbol", ","));
+    if (have("symbol", ",")) {
+      parameterListTree->addChild(mustBe("symbol", ","));
+    }
+  }
 
   return parameterListTree;
 }
@@ -459,7 +462,7 @@ ParseTree* CompilerParser::compileReturn() {
  * @return a ParseTree
  */
 ParseTree* CompilerParser::compileExpression() {
-  ParseTree* expressionTree = new ParseTree("expression","");
+  ParseTree* expressionTree = new ParseTree("expression", "");
 
   // Handle 'skip' keyword
   if (current()->getType() == "keyword" && current()->getValue() == "skip") {
