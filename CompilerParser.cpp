@@ -172,8 +172,7 @@ ParseTree* CompilerParser::compileParameterList() {
   do {
     // Get the type of the parameter
     if (have("keyword", "int") || have("keyword", "char") ||
-        have("keyword", "boolean") ||
-        have("identifier", current()->getValue())) {
+        have("keyword", "boolean")) {
       parameterListTree->addChild(current());
       next();
     } else {
@@ -181,19 +180,24 @@ ParseTree* CompilerParser::compileParameterList() {
     }
 
     // Get the name of the parameter
-    if (have("identifier", current()->getValue())) {
+    if (have("identifier","")) {
       parameterListTree->addChild(current());
       next();
     } else {
       throw ParseException();
     }
 
-    // If there's a comma, we expect another parameter
+    // If there's a comma, add it and expect another parameter
     if (have("symbol", ",")) {
       parameterListTree->addChild(current());
       next();
+    } else if (have("symbol", ")")) {
+      break;  // End of parameter list
+    } else {
+      throw ParseException();
     }
-  } while (!have("symbol", ")"));
+
+  } while (true);
 
   return parameterListTree;
 }
