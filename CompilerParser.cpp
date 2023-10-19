@@ -214,10 +214,7 @@ ParseTree* CompilerParser::compileSubroutineBody() {
     subroutineBodyTree->addChild(compileVarDec());
   }
 
-  // Check if the next token is not "}" before processing statements
-  if (!have("symbol", "}")) {
-    subroutineBodyTree->addChild(compileStatements());
-  }
+  subroutineBodyTree->addChild(compileStatements());
 
   // The subroutine body should end with a right curly brace
   subroutineBodyTree->addChild(mustBe("symbol", "}"));
