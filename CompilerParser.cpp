@@ -191,8 +191,6 @@ ParseTree* CompilerParser::compileParameterList() {
     // continue
   } while (have("symbol", ","));
 
-  mustBe("symbol", ")");
-
   return parameterListTree;
 }
 
