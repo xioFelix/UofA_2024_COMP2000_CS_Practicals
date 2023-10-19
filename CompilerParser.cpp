@@ -165,10 +165,10 @@ ParseTree* CompilerParser::compileParameterList() {
   // Create a new parse tree for the parameter list
   ParseTree* parameterListTree = new ParseTree("parameterList", "");
 
-  // // Check if the parameter list is empty
-  // if (have("symbol", ")")) {
-  //   return parameterListTree;
-  // }
+  // Check if the parameter list is empty
+  if (have("symbol", ")")) {
+    return parameterListTree;
+  }
 
   // Process parameters until we encounter a closing parenthesis
   while (!have("symbol", ")")) {
