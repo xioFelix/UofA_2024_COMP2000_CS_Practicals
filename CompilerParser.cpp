@@ -350,32 +350,59 @@ ParseTree* CompilerParser::compileIf() {
   // Create a new parse tree for the if statement
   ParseTree* ifTree = new ParseTree("ifStatement", "");
 
-  // An if statement should start with the keyword 'if'
+  // 'if' keyword
+  if (!have("keyword", "if")) {
+    throw ParseException();
+  }
   ifTree->addChild(mustBe("keyword", "if"));
 
-  // Followed by a left parenthesis
+  // '(' symbol
+  if (!have("symbol", "(")) {
+    throw ParseException();
+  }
   ifTree->addChild(mustBe("symbol", "("));
 
-  // Followed by an expression
+  // Expression
   ifTree->addChild(compileExpression());
 
-  // Followed by a right parenthesis
+  // ')' symbol
+  if (!have("symbol", ")")) {
+    throw ParseException();
+  }
   ifTree->addChild(mustBe("symbol", ")"));
 
-  // Followed by a left curly brace
+  // '{' symbol
+  if (!have("symbol", "{")) {
+    throw ParseException();
+  }
   ifTree->addChild(mustBe("symbol", "{"));
 
-  // Followed by statements
+  // Statements
   ifTree->addChild(compileStatements());
 
-  // Followed by a right curly brace
+  // '}' symbol
+  if (!have("symbol", "}")) {
+    throw ParseException();
+  }
   ifTree->addChild(mustBe("symbol", "}"));
 
-  // Check for an optional else clause
+  // Optional 'else' clause
   if (have("keyword", "else")) {
     ifTree->addChild(mustBe("keyword", "else"));
+
+    // '{' symbol for the 'else' clause
+    if (!have("symbol", "{")) {
+      throw ParseException();
+    }
     ifTree->addChild(mustBe("symbol", "{"));
+
+    // Statements for the 'else' clause
     ifTree->addChild(compileStatements());
+
+    // '}' symbol for the 'else' clause
+    if (!have("symbol", "}")) {
+      throw ParseException();
+    }
     ifTree->addChild(mustBe("symbol", "}"));
   }
 
