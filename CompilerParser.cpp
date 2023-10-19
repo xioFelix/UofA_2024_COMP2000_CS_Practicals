@@ -201,42 +201,27 @@ ParseTree* CompilerParser::compileParameterList() {
  * Generates a parse tree for a subroutine's body
  * @return a ParseTree
  */
-ParseTree* CompilerParser::compileSubroutine() {
-  // Create a new parse tree for the subroutine
-  ParseTree* subroutineTree = new ParseTree("subroutine", "");
+ParseTree* CompilerParser::compileSubroutineBody() {
+  // Create a new parse tree for the subroutine body
+  ParseTree* subroutineBodyTree = new ParseTree("subroutineBody", "");
 
-  // A subroutine should start with 'constructor', 'function', or 'method'
-  subroutineTree->addChild(mustBe("keyword", current()->getValue()));
-  next();
+  // The subroutine body should start with a left curly brace
+  subroutineBodyTree->addChild(mustBe("symbol", "{"));
 
-  // Handle the return type
-  if (have("keyword", "void")) {
-    subroutineTree->addChild(mustBe("keyword", "void"));
-  } else if (have("keyword", "int") || have("keyword", "char") ||
-             have("keyword", "boolean") ||
-             have("identifier", current()->getValue())) {
-    subroutineTree->addChild(current());
-    next();
-  } else {
-    throw ParseException();
+  // Process zero or more variable declarations
+  while (have("keyword", "var")) {
+    subroutineBodyTree->addChild(compileVarDec());
   }
 
-  // Add the subroutine name
-  subroutineTree->addChild(mustBe("identifier", current()->getValue()));
+  // Check if the next token is not "}" before processing statements
+  if (!have("symbol", "}")) {
+    subroutineBodyTree->addChild(compileStatements());
+  }
 
-  // Add the opening parenthesis
-  subroutineTree->addChild(mustBe("symbol", "("));
+  // The subroutine body should end with a right curly brace
+  subroutineBodyTree->addChild(mustBe("symbol", "}"));
 
-  // Add the parameter list
-  subroutineTree->addChild(compileParameterList());
-
-  // Add the closing parenthesis
-  subroutineTree->addChild(mustBe("symbol", ")"));
-
-  // Add the subroutine body
-  subroutineTree->addChild(compileSubroutineBody());
-
-  return subroutineTree;
+  return subroutineBodyTree;
 }
 
 /**
