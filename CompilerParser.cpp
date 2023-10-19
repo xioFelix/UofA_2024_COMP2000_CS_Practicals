@@ -17,7 +17,7 @@ CompilerParser::CompilerParser(std::list<Token*> tokens) {
  */
 ParseTree* CompilerParser::compileProgram() {
   // Create a new parse tree for the program
-  ParseTree* programTree = new ParseTree("program", "");
+  ParseTree* programTree = new ParseTree("main()", "");
 
   // Ensure the program starts with a "class" keyword
   if (!have("keyword", "class")) {
@@ -489,6 +489,11 @@ ParseTree* CompilerParser::compileExpression() {
   // Create a new parse tree for the expression
   ParseTree* expressionTree = new ParseTree("expression", "");
 
+  // Check for the 'skip' keyword
+  if (have("keyword", "skip")) {
+    expressionTree->addChild(mustBe("keyword", "skip"));
+  }
+
   // An expression should start with a term
   expressionTree->addChild(compileTerm());
 
@@ -514,57 +519,50 @@ ParseTree* CompilerParser::compileExpression() {
  * @return a ParseTree
  */
 ParseTree* CompilerParser::compileTerm() {
-  // Create a new parse tree for the term
-  ParseTree* termTree = new ParseTree("term", "");
-  Token* currentToken = current();
+    // Create a new parse tree for the term
+    ParseTree* termTree = new ParseTree("term", "");
+    Token* currentToken = current();
 
-  if (currentToken->getType() == "integerConstant") {
-    termTree->addChild(mustBe("integerConstant", currentToken->getValue()));
-  } else if (currentToken->getType() == "stringConstant") {
-    termTree->addChild(mustBe("stringConstant", currentToken->getValue()));
-  } else if (currentToken->getType() == "keyword" &&
-             (currentToken->getValue() == "true" ||
-              currentToken->getValue() == "false" ||
-              currentToken->getValue() == "null" ||
-              currentToken->getValue() == "this")) {
-    termTree->addChild(mustBe("keyword", currentToken->getValue()));
-  } else if (currentToken->getType() == "identifier") {
-    // Save the identifier
-    termTree->addChild(mustBe("identifier", currentToken->getValue()));
-
-    if (have("symbol", "[")) {  // Array access
-      termTree->addChild(mustBe("symbol", "["));
-      termTree->addChild(compileExpression());
-      termTree->addChild(mustBe("symbol", "]"));
-    } else if (have("symbol", "(")) {  // Subroutine call in form:
-                                       // subroutineName(expressionList)
-      termTree->addChild(mustBe("symbol", "("));
-      termTree->addChild(compileExpressionList());
-      termTree->addChild(mustBe("symbol", ")"));
-    } else if (have("symbol",
-                    ".")) {  // Subroutine call in form:
-                             // className/varName.subroutineName(expressionList)
-      termTree->addChild(mustBe("symbol", "."));
-      termTree->addChild(mustBe("identifier", current()->getValue()));
-      termTree->addChild(mustBe("symbol", "("));
-      termTree->addChild(compileExpressionList());
-      termTree->addChild(mustBe("symbol", ")"));
+    if (currentToken->getType() == "integerConstant") {
+        termTree->addChild(mustBe("integerConstant", currentToken->getValue()));
+    } else if (currentToken->getType() == "stringConstant") {
+        termTree->addChild(mustBe("stringConstant", currentToken->getValue()));
+    } else if (currentToken->getType() == "keyword" && 
+               (currentToken->getValue() == "true" || currentToken->getValue() == "false" || 
+                currentToken->getValue() == "null" || currentToken->getValue() == "this")) {
+        termTree->addChild(mustBe("keyword", currentToken->getValue()));
+    } else if (currentToken->getType() == "identifier") {
+        // Save the identifier
+        termTree->addChild(mustBe("identifier", currentToken->getValue()));
+        
+        if (have("symbol", "[")) {  // Array access
+            termTree->addChild(mustBe("symbol", "["));
+            termTree->addChild(compileExpression());
+            termTree->addChild(mustBe("symbol", "]"));
+        } else if (have("symbol", "(")) {  // Subroutine call in form: subroutineName(expressionList)
+            termTree->addChild(mustBe("symbol", "("));
+            termTree->addChild(compileExpressionList());
+            termTree->addChild(mustBe("symbol", ")"));
+        } else if (have("symbol", ".")) {  // Subroutine call in form: className/varName.subroutineName(expressionList)
+            termTree->addChild(mustBe("symbol", "."));
+            termTree->addChild(mustBe("identifier", current()->getValue()));
+            termTree->addChild(mustBe("symbol", "("));
+            termTree->addChild(compileExpressionList());
+            termTree->addChild(mustBe("symbol", ")"));
+        }
+    } else if (currentToken->getType() == "symbol" && currentToken->getValue() == "(") {
+        termTree->addChild(mustBe("symbol", "("));
+        termTree->addChild(compileExpression());
+        termTree->addChild(mustBe("symbol", ")"));
+    } else if (currentToken->getType() == "symbol" && 
+               (currentToken->getValue() == "-" || currentToken->getValue() == "~")) {
+        termTree->addChild(mustBe("symbol", currentToken->getValue()));
+        termTree->addChild(compileTerm());
+    } else {
+        throw ParseException();
     }
-  } else if (currentToken->getType() == "symbol" &&
-             currentToken->getValue() == "(") {
-    termTree->addChild(mustBe("symbol", "("));
-    termTree->addChild(compileExpression());
-    termTree->addChild(mustBe("symbol", ")"));
-  } else if (currentToken->getType() == "symbol" &&
-             (currentToken->getValue() == "-" ||
-              currentToken->getValue() == "~")) {
-    termTree->addChild(mustBe("symbol", currentToken->getValue()));
-    termTree->addChild(compileTerm());
-  } else {
-    throw ParseException();
-  }
 
-  return termTree;
+    return termTree;
 }
 
 /**
@@ -646,5 +644,5 @@ Token* CompilerParser::mustBe(std::string expectedType,
  * You can use this ParseException with `throw ParseException();`
  */
 const char* ParseException::what() {
-    return "An Exception occurred while parsing!";
+  return "ParseError (the program doesn't begin with a class)";
 }
