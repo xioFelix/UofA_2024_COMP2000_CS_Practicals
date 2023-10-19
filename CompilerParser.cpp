@@ -16,25 +16,8 @@ CompilerParser::CompilerParser(std::list<Token*> tokens) {
  * @return a ParseTree
  */
 ParseTree* CompilerParser::compileProgram() {
-  // Create a new parse tree for the program
-  ParseTree* programTree = new ParseTree("main()", "");
-
-  // Ensure the program starts with a "class" keyword
-  if (!have("keyword", "class")) {
-    throw ParseException();
-  }
-
-  // Loop through and process each class in the file
-  do {
-    programTree->addChild(compileClass());
-  } while (have("keyword", "class"));
-
-  if (tokensIterator != tokensList.end()) {
-    throw ParseException();  // If there are remaining tokens after processing
-                             // all classes, it's a parsing error.
-  }
-
-  return programTree;
+  ParseTree* program = this->compileClass();
+  return program;
 }
 
 /**
