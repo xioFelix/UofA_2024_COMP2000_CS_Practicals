@@ -620,7 +620,7 @@ Token* CompilerParser::current() {
   if (tokensIterator != tokensList.end()) {
     return *tokensIterator;
   }
-  return nullptr;
+  throw ParseException();
 }
 
 /**
