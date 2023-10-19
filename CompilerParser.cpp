@@ -164,7 +164,6 @@ ParseTree* CompilerParser::compileSubroutine() {
 ParseTree* CompilerParser::compileParameterList() {
   ParseTree* parameterListTree = new ParseTree("parameterList", "");
 
-  // Check if the parameter list is empty
   if (have("symbol", ")")) {
     return parameterListTree;
   }
@@ -172,7 +171,7 @@ ParseTree* CompilerParser::compileParameterList() {
   do {
     // Get the type of the parameter
     if (have("keyword", "int") || have("keyword", "char") ||
-        have("keyword", "boolean")) {
+        have("keyword", "boolean") || have("identifier","")) {
       parameterListTree->addChild(current());
       next();
     } else {
@@ -187,15 +186,12 @@ ParseTree* CompilerParser::compileParameterList() {
       throw ParseException();
     }
 
-    // If there's a comma, add it and expect another parameter
-    if (have("symbol", ",")) {
-      parameterListTree->addChild(current());
-      next();
-    } else if (have("symbol", ")")) {
-      break;  // End of parameter list
-    } else {
-      throw ParseException();
+    // If no comma, break out of the loop
+    if (!have("symbol", ",")) {
+      break;
     }
+    parameterListTree->addChild(current());
+    next();
 
   } while (true);
 
