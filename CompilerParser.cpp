@@ -516,10 +516,8 @@ ParseTree* CompilerParser::compileExpression() {
 ParseTree* CompilerParser::compileTerm() {
   // Create a new parse tree for the term
   ParseTree* termTree = new ParseTree("term", "");
-
   Token* currentToken = current();
 
-  // Check the type of the current token to determine the type of the term
   if (currentToken->getType() == "integerConstant") {
     termTree->addChild(mustBe("integerConstant", currentToken->getValue()));
   } else if (currentToken->getType() == "stringConstant") {
@@ -531,41 +529,26 @@ ParseTree* CompilerParser::compileTerm() {
               currentToken->getValue() == "this")) {
     termTree->addChild(mustBe("keyword", currentToken->getValue()));
   } else if (currentToken->getType() == "identifier") {
+    // Save the identifier
     termTree->addChild(mustBe("identifier", currentToken->getValue()));
 
-    // If the next token is '[', it's an array access
-    if (have("symbol", "[")) {
+    if (have("symbol", "[")) {  // Array access
       termTree->addChild(mustBe("symbol", "["));
       termTree->addChild(compileExpression());
       termTree->addChild(mustBe("symbol", "]"));
-    } else if (currentToken->getType() == "identifier") {
-      // Save the first identifier (it could be className, varName, or
-      // subroutineName)
-      termTree->addChild(mustBe("identifier", currentToken->getValue()));
-
-      if (have("symbol", "[")) {  // Array access
-        termTree->addChild(mustBe("symbol", "["));
-        termTree->addChild(compileExpression());
-        termTree->addChild(mustBe("symbol", "]"));
-      } else if (have("symbol", "{")) {
-        termTree->addChild(mustBe("symbol", "{"));
-        termTree->addChild(compileExpression());
-        termTree->addChild(mustBe("symbol", "}"));
-      } else if (have("symbol", "(")) {  // Subroutine call in form:
-                                         // subroutineName(expressionList)
-        termTree->addChild(mustBe("symbol", "("));
-        termTree->addChild(compileExpressionList());
-        termTree->addChild(mustBe("symbol", ")"));
-      } else if (
-          have("symbol",
-               ".")) {  // Subroutine call in form:
-                        // className/varName.subroutineName(expressionList)
-        termTree->addChild(mustBe("symbol", "."));
-        termTree->addChild(mustBe("identifier", current()->getValue()));
-        termTree->addChild(mustBe("symbol", "("));
-        termTree->addChild(compileExpressionList());
-        termTree->addChild(mustBe("symbol", ")"));
-      }
+    } else if (have("symbol", "(")) {  // Subroutine call in form:
+                                       // subroutineName(expressionList)
+      termTree->addChild(mustBe("symbol", "("));
+      termTree->addChild(compileExpressionList());
+      termTree->addChild(mustBe("symbol", ")"));
+    } else if (have("symbol",
+                    ".")) {  // Subroutine call in form:
+                             // className/varName.subroutineName(expressionList)
+      termTree->addChild(mustBe("symbol", "."));
+      termTree->addChild(mustBe("identifier", current()->getValue()));
+      termTree->addChild(mustBe("symbol", "("));
+      termTree->addChild(compileExpressionList());
+      termTree->addChild(mustBe("symbol", ")"));
     }
   } else if (currentToken->getType() == "symbol" &&
              currentToken->getValue() == "(") {
