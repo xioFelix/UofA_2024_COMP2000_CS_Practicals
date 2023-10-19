@@ -462,32 +462,32 @@ ParseTree* CompilerParser::compileReturn() {
  * @return a ParseTree
  */
 ParseTree* CompilerParser::compileExpression() {
-  // Create a new parse tree for the expression
-  ParseTree* expressionTree = new ParseTree("expression", "");
+  ParseTree* expressionTree = new ParseTree("expression","");
 
-  // Check for the 'skip' keyword
-  if (have("keyword", "skip")) {
-    expressionTree->addChild(mustBe("keyword", "skip"));
-  }
+  // Handle 'skip' keyword
+  if (current()->getType() == "keyword" && current()->getValue() == "skip") {
+    expressionTree->addChild(current());
+    next();
+  } else {
+    // Handle terms and operators
+    expressionTree->addChild(compileTerm());
 
-  // An expression should start with a term
-  expressionTree->addChild(compileTerm());
-
-  // Local lambda function to check if a string is an operator in Jack language
-  auto isOperator = [](std::string value) {
-    return value == "+" || value == "-" || value == "*" || value == "/" ||
-           value == "&" || value == "|" || value == "<" || value == ">" ||
-           value == "=" || value == "~";
-  };
-
-  // Check for an optional operator followed by another term
-  while (isOperator(current()->getValue())) {
-    expressionTree->addChild(mustBe(
-        "symbol", current()->getValue()));    // Add the operator to the tree
-    expressionTree->addChild(compileTerm());  // Add the next term
+    // Add additional terms separated by operators
+    while (isOperator(current())) {  // Assuming you have a method that checks
+                                     // if a token is an operator
+      expressionTree->addChild(current());  // Add the operator
+      next();
+      expressionTree->addChild(compileTerm());  // Add the next term
+    }
   }
 
   return expressionTree;
+}
+
+// Helper function to check if a token is an operator
+bool CompilerParser::isOperator(Token* token) {
+  std::string operators = "+-*/&|<>=";
+  return operators.find(token->getValue()) != std::string::npos;
 }
 
 /**

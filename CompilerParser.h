@@ -29,7 +29,6 @@ class CompilerParser {
         ParseTree* compileExpression();
         ParseTree* compileTerm();
         ParseTree* compileExpressionList();
-        // New Added
 
 
         void next();
@@ -39,6 +38,7 @@ class CompilerParser {
         // New Added
         std::list<Token*> tokensList;
         std::list<Token*>::iterator tokensIterator;
+        bool isOperator(Token* token);
 };
 
 class ParseException : public std::exception {
