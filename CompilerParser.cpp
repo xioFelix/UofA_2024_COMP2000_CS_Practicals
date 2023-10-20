@@ -1,5 +1,5 @@
 #include "CompilerParser.h"
-
+#include <iostream>
 /**
  * Constructor for the CompilerParser
  * @param tokens A linked list of tokens to be parsed
@@ -164,36 +164,42 @@ ParseTree* CompilerParser::compileSubroutine() {
 ParseTree* CompilerParser::compileParameterList() {
   ParseTree* parameterListTree = new ParseTree("parameterList", "");
 
-  // Check if the parameter list is empty
-  if (have("symbol", ")")) {
-    return parameterListTree;
+  bool expectType = true;
+
+  // While we don't encounter the end of the token list
+  // While we don't encounter the end of the token list
+  // While we don't encounter the end of the token list
+  while (tokensIterator != tokensList.end()) {
+    if (expectType) {
+      // Get the type of the parameter
+      if (have("keyword", "int") || have("keyword", "char") ||
+          have("keyword", "boolean") ||
+          have("identifier", current()->getValue())) {
+        parameterListTree->addChild(current());
+        next();
+        expectType = false;
+      } else {
+        throw ParseException();
+      }
+    } else {
+      // Get the name of the parameter
+      if (have("identifier", current()->getValue())) {
+        parameterListTree->addChild(current());
+        next();
+
+        // Check if the next token is a comma
+        if (tokensIterator != tokensList.end() && have("symbol", ",")) {
+          parameterListTree->addChild(current());
+          next();
+          expectType = true;
+        } else {
+          break;  // End of the parameter list
+        }
+      } else {
+        throw ParseException();
+      }
+    }
   }
-
-  do {
-    // Get the type of the parameter
-    if (have("keyword", "int") || have("keyword", "char") ||
-        have("keyword", "boolean") ||
-        have("identifier", current()->getValue())) {
-      parameterListTree->addChild(current());
-      next();
-    } else {
-      throw ParseException();
-    }
-
-    // Get the name of the parameter
-    if (have("identifier", current()->getValue())) {
-      parameterListTree->addChild(current());
-      next();
-    } else {
-      throw ParseException();
-    }
-
-    // If there's a comma, we expect another parameter
-    if (have("symbol", ",")) {
-      parameterListTree->addChild(current());
-      next();
-    }
-  } while (!have("symbol", ")"));
 
   return parameterListTree;
 }

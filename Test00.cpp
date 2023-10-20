@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
 
   try {
     CompilerParser parser(tokens);
-    ParseTree* result = parser.compileProgram();
+    ParseTree* result = parser.compileClass();
     if (result != NULL) {
       cout << result->tostring() << endl;
     }

@@ -19,13 +19,13 @@ int main(int argc, char *argv[]) {
   list<Token*> tokens;
   tokens.push_back(new Token("keyword", "int"));
   tokens.push_back(new Token("identifier", "a"));
-  tokens.push_back(new Token("symbol", ","));
-  tokens.push_back(new Token("keyword", "char"));
-  tokens.push_back(new Token("identifier", "b"));
+  // tokens.push_back(new Token("symbol", ","));
+  // tokens.push_back(new Token("keyword", "char"));
+  // tokens.push_back(new Token("identifier", "b"));
 
   try {
     CompilerParser parser(tokens);
-    ParseTree* result = parser.compileProgram();
+    ParseTree* result = parser.compileParameterList();
     if (result != NULL) {
       cout << result->tostring() << endl;
     }

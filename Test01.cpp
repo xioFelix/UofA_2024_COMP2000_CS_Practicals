@@ -8,9 +8,13 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
   /* Tokens for:
-    do skip ; 
+    function void myFunc ( int a ) {
+        var int a ;
+        let a = 1 ;
+    }
    */
   list<Token*> tokens;
+  tokens.push_back(new Token("keyword", "function"));
   tokens.push_back(new Token("keyword", "void"));
   tokens.push_back(new Token("identifier", "myFunc"));
   tokens.push_back(new Token("symbol", "("));
@@ -31,7 +35,7 @@ int main(int argc, char* argv[]) {
 
   try {
     CompilerParser parser(tokens);
-    ParseTree* result = parser.compileProgram();
+    ParseTree* result = parser.compileSubroutine();
     if (result != NULL) {
       cout << result->tostring() << endl;
     }
