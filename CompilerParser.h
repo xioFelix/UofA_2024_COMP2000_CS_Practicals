@@ -10,6 +10,7 @@
 class CompilerParser {
     public:
         CompilerParser(std::list<Token*> tokens);
+        CompilerParser() : parenthesisCount(0) {}
 
         ParseTree* compileProgram();
         ParseTree* compileClass();
@@ -39,6 +40,8 @@ class CompilerParser {
         std::list<Token*> tokensList;
         std::list<Token*>::iterator tokensIterator;
         bool isOperator(Token* token);
+        bool isTermStart(Token* token);
+        int parenthesisCount;
 };
 
 class ParseException : public std::exception {
