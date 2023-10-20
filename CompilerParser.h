@@ -33,8 +33,8 @@ class CompilerParser {
 
         void next();
         Token* current();
-        bool checkMatch(std::string expectedType, std::string expectedValue);
-        Token* returnMatch(std::string expectedType, std::string expectedValue);
+        bool have(std::string expectedType, std::string expectedValue);
+        Token* mustBe(std::string expectedType, std::string expectedValue);
         // New Added
         std::list<Token*> tokensList;
         std::list<Token*>::iterator tokensIterator;
