@@ -9,6 +9,12 @@ using namespace std;
 int main(int argc, char *argv[]) {
   /* Tokens for:
     int a, char b
+
+    keyword int
+    identifier a
+    symbol ,
+    keyword char
+    identifier b
    */
   list<Token*> tokens;
   tokens.push_back(new Token("keyword", "int"));
