@@ -1,5 +1,7 @@
 #include "CompilerParser.h"
 
+#include <iostream>
+
 /**
  * Constructor for the CompilerParser
  * @param tokens A linked list of tokens to be parsed
@@ -24,6 +26,9 @@ ParseTree* CompilerParser::compileProgram() {
  * @return a ParseTree
  */
 ParseTree* CompilerParser::compileClass() {
+
+  std::cout << "In the function compileClass" << std::endl;
+  
   // Create a new parse tree for the class
   ParseTree* classTree = new ParseTree("class", "");
 
@@ -113,6 +118,9 @@ ParseTree* CompilerParser::compileClassVarDec() {
  * @return a ParseTree
  */
 ParseTree* CompilerParser::compileSubroutine() {
+
+  std::cout << "In the function compileSubroutine" << std::endl;
+
   // Create a new parse tree for the subroutine
   ParseTree* subroutineTree = new ParseTree("subroutine", "");
 
@@ -162,7 +170,11 @@ ParseTree* CompilerParser::compileSubroutine() {
  * @return a ParseTree
  */
 ParseTree* CompilerParser::compileParameterList() {
-  ParseTree* parameterListTree = new ParseTree("parameterList", "");
+
+  std::cout << "In the function compileParameterList"<<std::endl;
+
+   ParseTree* parameterListTree =
+      new ParseTree("parameterList", "");
 
   // Check if the parameter list is empty
   if (have("symbol", ")")) {
@@ -180,7 +192,7 @@ ParseTree* CompilerParser::compileParameterList() {
       throw ParseException();
     }
 
-    // Get the name of the parameter
+    // Expect the parameter name (an identifier) after the type
     if (have("identifier", current()->getValue())) {
       parameterListTree->addChild(current());
       next();
