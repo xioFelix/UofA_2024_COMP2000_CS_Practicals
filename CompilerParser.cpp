@@ -26,35 +26,43 @@ ParseTree* CompilerParser::compileProgram() {
  * @return a ParseTree
  */
 ParseTree* CompilerParser::compileClass() {
-
-  std::cout << "In the function compileClass" << std::endl;
-  
   // Create a new parse tree for the class
   ParseTree* classTree = new ParseTree("class", "");
 
   // A class should start with the keyword 'class'
-  classTree->addChild(mustBe("keyword", "class"));
+  if (have("keyword", "class")) {
+    classTree->addChild(current());
+    next();
+  } else if (have("identifier", current()->getValue())) {
+    // Followed by the class name (an identifier)
+    classTree->addChild(current());
+    next();
+  } else if (have("symbol", "{")) {
+    // Followed by a left curly brace
+    classTree->addChild(current());
+    next();
 
-  // Followed by the class name (an identifier)
-  classTree->addChild(mustBe("identifier", current()->getValue()));
-
-  // Followed by a left curly brace
-  classTree->addChild(mustBe("symbol", "{"));
-
-  // Process class variable declarations and/or subroutine declarations
-  while (!have("symbol", "}")) {
-    if (have("keyword", "static") || have("keyword", "field")) {
-      classTree->addChild(compileClassVarDec());
-    } else if (have("keyword", "constructor") || have("keyword", "function") ||
-               have("keyword", "method")) {
-      classTree->addChild(compileSubroutine());
-    } else if (have("symbol", "}")) {
-      // Followed by a right curly brace
-      classTree->addChild(mustBe("symbol", "}"));
-    } else {
-      throw ParseException();
+    // Process class variable declarations and/or subroutine declarations
+    while (!have("symbol", "}")) {
+      if (have("keyword", "static") || have("keyword", "field")) {
+        classTree->addChild(compileClassVarDec());
+      } else if (have("keyword", "constructor") ||
+                 have("keyword", "function") || have("keyword", "method")) {
+        classTree->addChild(compileSubroutine());
+      } else {
+        throw ParseException();
+      }
     }
+
+    // Followed by a right curly brace
+    if (have("symbol", "}")) {
+      classTree->addChild(current());
+      next();
+    }
+  } else {
+    throw ParseException();
   }
+
   return classTree;
 }
 
@@ -76,11 +84,11 @@ ParseTree* CompilerParser::compileClassVarDec() {
   }
 
   // Followed by the type of the variable
-  if (have("keyword", "int") || have("keyword", "char") ||
-      have("keyword", "boolean")) {
+  if (have("identifier", current()->getValue())) {
     classVarDecTree->addChild(current());
     next();
-  } else if (have("identifier", current()->getValue())) {
+  } else if (have("keyword", "int") || have("keyword", "char") ||
+             have("keyword", "boolean")) {
     classVarDecTree->addChild(current());
     next();
   } else {

@@ -11,7 +11,6 @@ int main(int argc, char* argv[]) {
     do skip ; 
    */
   list<Token*> tokens;
-  tokens.push_back(new Token("keyword", "function"));
   tokens.push_back(new Token("keyword", "void"));
   tokens.push_back(new Token("identifier", "myFunc"));
   tokens.push_back(new Token("symbol", "("));
