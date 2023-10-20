@@ -306,7 +306,7 @@ ParseTree* CompilerParser::compileStatements() {
   // valid statement
   while (true) {
     // std::cout << "Current token in compileStatements: " << current()->getValue()
-              << "\n";
+              // << "\n";
 
     if (have("keyword", "let")) {
       statementsTree->addChild(compileLet());
