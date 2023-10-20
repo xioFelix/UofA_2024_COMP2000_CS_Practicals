@@ -113,46 +113,50 @@ ParseTree* CompilerParser::compileClassVarDec() {
  * @return a ParseTree
  */
 ParseTree* CompilerParser::compileSubroutine() {
-  // Create a new parse tree for the subroutine
+  // std::cout << "Entering compileSubroutine\n";
+
   ParseTree* subroutineTree = new ParseTree("subroutine", "");
 
-  // A subroutine should start with 'constructor', 'function', or 'method'
   if (have("keyword", "constructor")) {
+    // std::cout << "Parsing constructor\n";
     subroutineTree->addChild(mustBe("keyword", "constructor"));
   } else if (have("keyword", "function")) {
+    // std::cout << "Parsing function\n";
     subroutineTree->addChild(mustBe("keyword", "function"));
   } else if (have("keyword", "method")) {
+    // std::cout << "Parsing method\n";
     subroutineTree->addChild(mustBe("keyword", "method"));
   } else {
     throw ParseException();
   }
 
-  // Followed by the return type of the subroutine
   if (have("keyword", "void") || have("keyword", "int") ||
       have("keyword", "char") || have("keyword", "boolean")) {
+    // std::cout << "Parsed return type: " << current()->getValue() << "\n";
     subroutineTree->addChild(current());
     next();
   } else if (have("identifier", current()->getValue())) {
+    // std::cout << "Parsed return type: " << current()->getValue() << "\n";
     subroutineTree->addChild(current());
     next();
   } else {
     throw ParseException();
   }
 
-  // Followed by the subroutine name
+  // std::cout << "Parsed subroutine name: " << current()->getValue() << "\n";
   subroutineTree->addChild(mustBe("identifier", current()->getValue()));
 
-  // Followed by an opening parenthesis
+  // std::cout << "Parsed opening parenthesis for parameters\n";
   subroutineTree->addChild(mustBe("symbol", "("));
 
-  // Handle parameters inside the parenthesis
   subroutineTree->addChild(compileParameterList());
 
-  // Followed by a closing parenthesis
+  // std::cout << "Parsed closing parenthesis for parameters\n";
   subroutineTree->addChild(mustBe("symbol", ")"));
 
-  // Handle the subroutine body
   subroutineTree->addChild(compileSubroutineBody());
+
+  // std::cout << "Exiting compileSubroutine\n";
 
   return subroutineTree;
 }
@@ -164,17 +168,26 @@ ParseTree* CompilerParser::compileSubroutine() {
 ParseTree* CompilerParser::compileParameterList() {
   ParseTree* parameterListTree = new ParseTree("parameterList", "");
 
+  // std::cout << "Entering compileParameterList\n";
+
   bool expectType = true;
 
-  // While we don't encounter the end of the token list
-  // While we don't encounter the end of the token list
-  // While we don't encounter the end of the token list
+  // Check if the current token is a closing parenthesis
+  if (have("symbol", ")")) {
+    // std::cout << "Exiting compileParameterList with no parameters\n";
+    return parameterListTree;
+  }
+
   while (tokensIterator != tokensList.end()) {
+    // std::cout << "Current token in compileParameterList: "
+              << current()->getValue() << "\n";
+
     if (expectType) {
-      // Get the type of the parameter
       if (have("keyword", "int") || have("keyword", "char") ||
           have("keyword", "boolean") ||
           have("identifier", current()->getValue())) {
+        // std::cout << "Parsed type: " << current()->getValue() << "\n";
+
         parameterListTree->addChild(current());
         next();
         expectType = false;
@@ -182,24 +195,27 @@ ParseTree* CompilerParser::compileParameterList() {
         throw ParseException();
       }
     } else {
-      // Get the name of the parameter
       if (have("identifier", current()->getValue())) {
+        // std::cout << "Parsed identifier: " << current()->getValue() << "\n";
+
         parameterListTree->addChild(current());
         next();
 
-        // Check if the next token is a comma
         if (tokensIterator != tokensList.end() && have("symbol", ",")) {
           parameterListTree->addChild(current());
           next();
           expectType = true;
         } else {
-          break;  // End of the parameter list
+          break;
         }
       } else {
         throw ParseException();
       }
     }
   }
+
+  // std::cout << "Exiting compileParameterList with token: "
+            << current()->getValue() << "\n";
 
   return parameterListTree;
 }

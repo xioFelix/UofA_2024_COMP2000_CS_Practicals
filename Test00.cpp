@@ -12,18 +12,15 @@ int main(int argc, char *argv[]) {
    */
   list<Token*> tokens;
   tokens.push_back(new Token("keyword", "class"));
-  tokens.push_back(new Token("identifier", "MyClass"));
+  tokens.push_back(new Token("identifier", "main"));
   tokens.push_back(new Token("symbol", "{"));
-  tokens.push_back(new Token("keyword", "static"));
-  tokens.push_back(new Token("keyword", "int"));
-  tokens.push_back(new Token("identifier", "a"));
-  tokens.push_back(new Token("symbol", ","));
-  tokens.push_back(new Token("identifier", "b"));
-  tokens.push_back(new Token("symbol", ";"));
-  tokens.push_back(new Token("keyword", "field"));
-  tokens.push_back(new Token("keyword", "char"));
-  tokens.push_back(new Token("identifier", "name"));
-  tokens.push_back(new Token("symbol", ";"));
+  tokens.push_back(new Token("keyword", "function"));
+  tokens.push_back(new Token("keyword", "void"));
+  tokens.push_back(new Token("identifier", "test"));
+  tokens.push_back(new Token("symbol", "("));
+  tokens.push_back(new Token("symbol", ")"));
+  tokens.push_back(new Token("symbol", "{"));
+  tokens.push_back(new Token("symbol", "}"));
   tokens.push_back(new Token("symbol", "}"));
 
   try {
