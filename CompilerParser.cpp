@@ -1,7 +1,5 @@
 #include "CompilerParser.h"
 
-#include <iostream>
-
 /**
  * Constructor for the CompilerParser
  * @param tokens A linked list of tokens to be parsed
@@ -30,38 +28,31 @@ ParseTree* CompilerParser::compileClass() {
   ParseTree* classTree = new ParseTree("class", "");
 
   // A class should start with the keyword 'class'
-  if (have("keyword", "class")) {
-    classTree->addChild(current());
-    next();
-  } else if (have("identifier", current()->getValue())) {
-    // Followed by the class name (an identifier)
-    classTree->addChild(current());
-    next();
-  } else if (have("symbol", "{")) {
-    // Followed by a left curly brace
-    classTree->addChild(current());
-    next();
-
-    // Process class variable declarations and/or subroutine declarations
-    while (!have("symbol", "}")) {
-      if (have("keyword", "static") || have("keyword", "field")) {
-        classTree->addChild(compileClassVarDec());
-      } else if (have("keyword", "constructor") ||
-                 have("keyword", "function") || have("keyword", "method")) {
-        classTree->addChild(compileSubroutine());
-      } else {
-        throw ParseException();
-      }
-    }
-
-    // Followed by a right curly brace
-    if (have("symbol", "}")) {
-      classTree->addChild(current());
-      next();
-    }
-  } else {
+  if (!have("keyword", "class")) {
     throw ParseException();
   }
+  classTree->addChild(mustBe("keyword", "class"));
+
+  // Followed by the class name (an identifier)
+  classTree->addChild(mustBe("identifier", current()->getValue()));
+
+  // Followed by a left curly brace
+  classTree->addChild(mustBe("symbol", "{"));
+
+  // Process class variable declarations and/or subroutine declarations
+  while (!have("symbol", "}")) {
+    if (have("keyword", "static") || have("keyword", "field")) {
+      classTree->addChild(compileClassVarDec());
+    } else if (have("keyword", "constructor") || have("keyword", "function") ||
+               have("keyword", "method")) {
+      classTree->addChild(compileSubroutine());
+    } else {
+      throw ParseException();
+    }
+  }
+
+  // Followed by a right curly brace
+  classTree->addChild(mustBe("symbol", "}"));
 
   return classTree;
 }
@@ -84,11 +75,11 @@ ParseTree* CompilerParser::compileClassVarDec() {
   }
 
   // Followed by the type of the variable
-  if (have("identifier", current()->getValue())) {
+  if (have("keyword", "int") || have("keyword", "char") ||
+      have("keyword", "boolean")) {
     classVarDecTree->addChild(current());
     next();
-  } else if (have("keyword", "int") || have("keyword", "char") ||
-             have("keyword", "boolean")) {
+  } else if (have("identifier", current()->getValue())) {
     classVarDecTree->addChild(current());
     next();
   } else {
@@ -122,9 +113,6 @@ ParseTree* CompilerParser::compileClassVarDec() {
  * @return a ParseTree
  */
 ParseTree* CompilerParser::compileSubroutine() {
-
-  std::cout << "In the function compileSubroutine" << std::endl;
-
   // Create a new parse tree for the subroutine
   ParseTree* subroutineTree = new ParseTree("subroutine", "");
 
@@ -174,11 +162,7 @@ ParseTree* CompilerParser::compileSubroutine() {
  * @return a ParseTree
  */
 ParseTree* CompilerParser::compileParameterList() {
-
-  std::cout << "In the function compileParameterList"<<std::endl;
-
-   ParseTree* parameterListTree =
-      new ParseTree("parameterList", "");
+  ParseTree* parameterListTree = new ParseTree("parameterList", "");
 
   // Check if the parameter list is empty
   if (have("symbol", ")")) {
@@ -196,7 +180,7 @@ ParseTree* CompilerParser::compileParameterList() {
       throw ParseException();
     }
 
-    // Expect the parameter name (an identifier) after the type
+    // Get the name of the parameter
     if (have("identifier", current()->getValue())) {
       parameterListTree->addChild(current());
       next();
