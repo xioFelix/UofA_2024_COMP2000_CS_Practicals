@@ -299,34 +299,32 @@ ParseTree* CompilerParser::compileVarDec() {
 ParseTree* CompilerParser::compileStatements() {
   // Create a new parse tree for the series of statements
   ParseTree* statementsTree = new ParseTree("statements", "");
-  bool hasStatements = false;
+
+  // std::cout << "Entering compileStatements\n";
 
   // Process statements until we encounter a character that doesn't start a
   // valid statement
   while (true) {
+    // std::cout << "Current token in compileStatements: " << current()->getValue()
+              << "\n";
+
     if (have("keyword", "let")) {
       statementsTree->addChild(compileLet());
-      hasStatements = true;
     } else if (have("keyword", "if")) {
       statementsTree->addChild(compileIf());
-      hasStatements = true;
     } else if (have("keyword", "while")) {
       statementsTree->addChild(compileWhile());
-      hasStatements = true;
     } else if (have("keyword", "do")) {
       statementsTree->addChild(compileDo());
-      hasStatements = true;
     } else if (have("keyword", "return")) {
       statementsTree->addChild(compileReturn());
-      hasStatements = true;
     } else {
+      // std::cout << "No valid statement found in compileStatements\n";
       break;
     }
   }
 
-  if (!hasStatements) {
-    throw ParseException();
-  }
+  // std::cout << "Exiting compileStatements\n";
 
   return statementsTree;
 }
@@ -373,38 +371,48 @@ ParseTree* CompilerParser::compileIf() {
   // Create a new parse tree for the if statement
   ParseTree* ifTree = new ParseTree("ifStatement", "");
 
+  // std::cout << "Entering compileIf\n";
+  // std::cout << "Current token in compileIf: " << current()->getValue() << "\n";
+
   // 'if' keyword
   if (!have("keyword", "if")) {
+    // std::cout << "Expected 'if' keyword\n";
     throw ParseException();
   }
   ifTree->addChild(mustBe("keyword", "if"));
 
   // '(' symbol
   if (!have("symbol", "(")) {
+    // std::cout << "Expected '(' symbol\n";
     throw ParseException();
   }
   ifTree->addChild(mustBe("symbol", "("));
 
   // Expression
+  // std::cout << "Parsing expression in if condition\n";
   ifTree->addChild(compileExpression());
 
   // ')' symbol
   if (!have("symbol", ")")) {
+    // std::cout << "Expected ')' symbol\n";
     throw ParseException();
   }
   ifTree->addChild(mustBe("symbol", ")"));
 
   // '{' symbol
   if (!have("symbol", "{")) {
+    // std::cout << "Expected '{' symbol\n";
     throw ParseException();
   }
   ifTree->addChild(mustBe("symbol", "{"));
 
   // Statements
+  // std::cout << "Parsing statements in if body\n";
   ifTree->addChild(compileStatements());
 
   // '}' symbol
   if (!have("symbol", "}")) {
+    // std::cout << "Expected '}' symbol\n";
     throw ParseException();
   }
   ifTree->addChild(mustBe("symbol", "}"));
@@ -415,19 +423,24 @@ ParseTree* CompilerParser::compileIf() {
 
     // '{' symbol for the 'else' clause
     if (!have("symbol", "{")) {
+      // std::cout << "Expected '{' symbol in else clause\n";
       throw ParseException();
     }
     ifTree->addChild(mustBe("symbol", "{"));
 
     // Statements for the 'else' clause
+    // std::cout << "Parsing statements in else body\n";
     ifTree->addChild(compileStatements());
 
     // '}' symbol for the 'else' clause
     if (!have("symbol", "}")) {
+      // std::cout << "Expected '}' symbol in else clause\n";
       throw ParseException();
     }
     ifTree->addChild(mustBe("symbol", "}"));
   }
+
+  // std::cout << "Exiting compileIf\n";
 
   return ifTree;
 }
