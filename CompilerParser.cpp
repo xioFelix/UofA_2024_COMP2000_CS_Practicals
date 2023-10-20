@@ -33,9 +33,6 @@ ParseTree* CompilerParser::compileClass() {
   ParseTree* classTree = new ParseTree("class", "");
 
   // A class should start with the keyword 'class'
-  if (!have("keyword", "class")) {
-    throw ParseException();
-  }
   classTree->addChild(mustBe("keyword", "class"));
 
   // Followed by the class name (an identifier)
@@ -51,14 +48,13 @@ ParseTree* CompilerParser::compileClass() {
     } else if (have("keyword", "constructor") || have("keyword", "function") ||
                have("keyword", "method")) {
       classTree->addChild(compileSubroutine());
+    } else if (have("symbol", "}")) {
+      // Followed by a right curly brace
+      classTree->addChild(mustBe("symbol", "}"));
     } else {
       throw ParseException();
     }
   }
-
-  // Followed by a right curly brace
-  classTree->addChild(mustBe("symbol", "}"));
-
   return classTree;
 }
 
