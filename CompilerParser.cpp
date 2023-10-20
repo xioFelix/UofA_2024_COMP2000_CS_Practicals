@@ -28,23 +28,23 @@ ParseTree* CompilerParser::compileClass() {
   ParseTree* classTree = new ParseTree("class", "");
 
   // A class should start with the keyword 'class'
-  if (!checkMatch("keyword", "class")) {
+  if (!have("keyword", "class")) {
     throw ParseException();
   }
-  classTree->addChild(returnMatch("keyword", "class"));
+  classTree->addChild(mustBe("keyword", "class"));
 
   // Followed by the class name (an identifier)
-  classTree->addChild(returnMatch("identifier", current()->getValue()));
+  classTree->addChild(mustBe("identifier", current()->getValue()));
 
   // Followed by a left curly brace
-  classTree->addChild(returnMatch("symbol", "{"));
+  classTree->addChild(mustBe("symbol", "{"));
 
   // Process class variable declarations and/or subroutine declarations
-  while (!checkMatch("symbol", "}")) {
-    if (checkMatch("keyword", "static") || checkMatch("keyword", "field")) {
+  while (!have("symbol", "}")) {
+    if (have("keyword", "static") || have("keyword", "field")) {
       classTree->addChild(compileClassVarDec());
-    } else if (checkMatch("keyword", "constructor") || checkMatch("keyword", "function") ||
-               checkMatch("keyword", "method")) {
+    } else if (have("keyword", "constructor") || have("keyword", "function") ||
+               have("keyword", "method")) {
       classTree->addChild(compileSubroutine());
     } else {
       throw ParseException();
@@ -52,7 +52,7 @@ ParseTree* CompilerParser::compileClass() {
   }
 
   // Followed by a right curly brace
-  classTree->addChild(returnMatch("symbol", "}"));
+  classTree->addChild(mustBe("symbol", "}"));
 
   return classTree;
 }
@@ -66,20 +66,20 @@ ParseTree* CompilerParser::compileClassVarDec() {
   ParseTree* classVarDecTree = new ParseTree("classVarDec", "");
 
   // A class variable declaration should start with either 'static' or 'field'
-  if (checkMatch("keyword", "static")) {
-    classVarDecTree->addChild(returnMatch("keyword", "static"));
-  } else if (checkMatch("keyword", "field")) {
-    classVarDecTree->addChild(returnMatch("keyword", "field"));
+  if (have("keyword", "static")) {
+    classVarDecTree->addChild(mustBe("keyword", "static"));
+  } else if (have("keyword", "field")) {
+    classVarDecTree->addChild(mustBe("keyword", "field"));
   } else {
     throw ParseException();
   }
 
   // Followed by the type of the variable
-  if (checkMatch("keyword", "int") || checkMatch("keyword", "char") ||
-      checkMatch("keyword", "boolean")) {
+  if (have("keyword", "int") || have("keyword", "char") ||
+      have("keyword", "boolean")) {
     classVarDecTree->addChild(current());
     next();
-  } else if (checkMatch("identifier", current()->getValue())) {
+  } else if (have("identifier", current()->getValue())) {
     classVarDecTree->addChild(current());
     next();
   } else {
@@ -88,14 +88,14 @@ ParseTree* CompilerParser::compileClassVarDec() {
 
   // Followed by one or more variable names separated by commas
   while (true) {
-    if (checkMatch("identifier", current()->getValue())) {
+    if (have("identifier", current()->getValue())) {
       classVarDecTree->addChild(current());
       next();
 
-      if (checkMatch("symbol", ",")) {
-        classVarDecTree->addChild(returnMatch("symbol", ","));
-      } else if (checkMatch("symbol", ";")) {
-        classVarDecTree->addChild(returnMatch("symbol", ";"));
+      if (have("symbol", ",")) {
+        classVarDecTree->addChild(mustBe("symbol", ","));
+      } else if (have("symbol", ";")) {
+        classVarDecTree->addChild(mustBe("symbol", ";"));
         break;
       } else {
         throw ParseException();
@@ -117,22 +117,22 @@ ParseTree* CompilerParser::compileSubroutine() {
   ParseTree* subroutineTree = new ParseTree("subroutine", "");
 
   // A subroutine should start with 'constructor', 'function', or 'method'
-  if (checkMatch("keyword", "constructor")) {
-    subroutineTree->addChild(returnMatch("keyword", "constructor"));
-  } else if (checkMatch("keyword", "function")) {
-    subroutineTree->addChild(returnMatch("keyword", "function"));
-  } else if (checkMatch("keyword", "method")) {
-    subroutineTree->addChild(returnMatch("keyword", "method"));
+  if (have("keyword", "constructor")) {
+    subroutineTree->addChild(mustBe("keyword", "constructor"));
+  } else if (have("keyword", "function")) {
+    subroutineTree->addChild(mustBe("keyword", "function"));
+  } else if (have("keyword", "method")) {
+    subroutineTree->addChild(mustBe("keyword", "method"));
   } else {
     throw ParseException();
   }
 
   // Followed by the return type of the subroutine
-  if (checkMatch("keyword", "void") || checkMatch("keyword", "int") ||
-      checkMatch("keyword", "char") || checkMatch("keyword", "boolean")) {
+  if (have("keyword", "void") || have("keyword", "int") ||
+      have("keyword", "char") || have("keyword", "boolean")) {
     subroutineTree->addChild(current());
     next();
-  } else if (checkMatch("identifier", current()->getValue())) {
+  } else if (have("identifier", current()->getValue())) {
     subroutineTree->addChild(current());
     next();
   } else {
@@ -140,16 +140,16 @@ ParseTree* CompilerParser::compileSubroutine() {
   }
 
   // Followed by the subroutine name
-  subroutineTree->addChild(returnMatch("identifier", current()->getValue()));
+  subroutineTree->addChild(mustBe("identifier", current()->getValue()));
 
   // Followed by an opening parenthesis
-  subroutineTree->addChild(returnMatch("symbol", "("));
+  subroutineTree->addChild(mustBe("symbol", "("));
 
   // Handle parameters inside the parenthesis
   subroutineTree->addChild(compileParameterList());
 
   // Followed by a closing parenthesis
-  subroutineTree->addChild(returnMatch("symbol", ")"));
+  subroutineTree->addChild(mustBe("symbol", ")"));
 
   // Handle the subroutine body
   subroutineTree->addChild(compileSubroutineBody());
@@ -164,14 +164,16 @@ ParseTree* CompilerParser::compileSubroutine() {
 ParseTree* CompilerParser::compileParameterList() {
   ParseTree* parameterListTree = new ParseTree("parameterList", "");
 
-  if (checkMatch("symbol", ")")) {
+  // Check if the parameter list is empty
+  if (have("symbol", ")")) {
     return parameterListTree;
   }
 
   do {
     // Get the type of the parameter
-    if (checkMatch("keyword", "int") || checkMatch("keyword", "char") ||
-        checkMatch("keyword", "boolean") || checkMatch("identifier","")) {
+    if (have("keyword", "int") || have("keyword", "char") ||
+        have("keyword", "boolean") ||
+        have("identifier", current()->getValue())) {
       parameterListTree->addChild(current());
       next();
     } else {
@@ -179,21 +181,19 @@ ParseTree* CompilerParser::compileParameterList() {
     }
 
     // Get the name of the parameter
-    if (checkMatch("identifier","")) {
+    if (have("identifier", current()->getValue())) {
       parameterListTree->addChild(current());
       next();
     } else {
       throw ParseException();
     }
 
-    // If no comma, break out of the loop
-    if (!checkMatch("symbol", ",")) {
-      break;
+    // If there's a comma, we expect another parameter
+    if (have("symbol", ",")) {
+      parameterListTree->addChild(current());
+      next();
     }
-    parameterListTree->addChild(current());
-    next();
-
-  } while (true);
+  } while (!have("symbol", ")"));
 
   return parameterListTree;
 }
@@ -207,20 +207,20 @@ ParseTree* CompilerParser::compileSubroutineBody() {
   ParseTree* subroutineBodyTree = new ParseTree("subroutineBody", "");
 
   // The subroutine body should start with a left curly brace
-  subroutineBodyTree->addChild(returnMatch("symbol", "{"));
+  subroutineBodyTree->addChild(mustBe("symbol", "{"));
 
   // Process zero or more variable declarations
-  while (checkMatch("keyword", "var")) {
+  while (have("keyword", "var")) {
     subroutineBodyTree->addChild(compileVarDec());
   }
 
   // Check if the next token is not "}" before processing statements
-  if (!checkMatch("symbol", "}")) {
+  if (!have("symbol", "}")) {
     subroutineBodyTree->addChild(compileStatements());
   }
 
   // The subroutine body should end with a right curly brace
-  subroutineBodyTree->addChild(returnMatch("symbol", "}"));
+  subroutineBodyTree->addChild(mustBe("symbol", "}"));
 
   return subroutineBodyTree;
 }
@@ -234,14 +234,14 @@ ParseTree* CompilerParser::compileVarDec() {
   ParseTree* varDecTree = new ParseTree("varDec", "");
 
   // A variable declaration should start with the keyword 'var'
-  varDecTree->addChild(returnMatch("keyword", "var"));
+  varDecTree->addChild(mustBe("keyword", "var"));
 
   // Followed by the type of the variable
-  if (checkMatch("keyword", "int") || checkMatch("keyword", "char") ||
-      checkMatch("keyword", "boolean")) {
+  if (have("keyword", "int") || have("keyword", "char") ||
+      have("keyword", "boolean")) {
     varDecTree->addChild(current());
     next();
-  } else if (checkMatch("identifier", current()->getValue())) {
+  } else if (have("identifier", current()->getValue())) {
     varDecTree->addChild(current());
     next();
   } else {
@@ -250,14 +250,14 @@ ParseTree* CompilerParser::compileVarDec() {
 
   // Followed by one or more variable names separated by commas
   while (true) {
-    if (checkMatch("identifier", current()->getValue())) {
+    if (have("identifier", current()->getValue())) {
       varDecTree->addChild(current());
       next();
 
-      if (checkMatch("symbol", ",")) {
-        varDecTree->addChild(returnMatch("symbol", ","));
-      } else if (checkMatch("symbol", ";")) {
-        varDecTree->addChild(returnMatch("symbol", ";"));
+      if (have("symbol", ",")) {
+        varDecTree->addChild(mustBe("symbol", ","));
+      } else if (have("symbol", ";")) {
+        varDecTree->addChild(mustBe("symbol", ";"));
         break;
       } else {
         throw ParseException();
@@ -282,19 +282,19 @@ ParseTree* CompilerParser::compileStatements() {
   // Process statements until we encounter a character that doesn't start a
   // valid statement
   while (true) {
-    if (checkMatch("keyword", "let")) {
+    if (have("keyword", "let")) {
       statementsTree->addChild(compileLet());
       hasStatements = true;
-    } else if (checkMatch("keyword", "if")) {
+    } else if (have("keyword", "if")) {
       statementsTree->addChild(compileIf());
       hasStatements = true;
-    } else if (checkMatch("keyword", "while")) {
+    } else if (have("keyword", "while")) {
       statementsTree->addChild(compileWhile());
       hasStatements = true;
-    } else if (checkMatch("keyword", "do")) {
+    } else if (have("keyword", "do")) {
       statementsTree->addChild(compileDo());
       hasStatements = true;
-    } else if (checkMatch("keyword", "return")) {
+    } else if (have("keyword", "return")) {
       statementsTree->addChild(compileReturn());
       hasStatements = true;
     } else {
@@ -318,27 +318,27 @@ ParseTree* CompilerParser::compileLet() {
   ParseTree* letTree = new ParseTree("letStatement", "");
 
   // A let statement should start with the keyword 'let'
-  letTree->addChild(returnMatch("keyword", "let"));
+  letTree->addChild(mustBe("keyword", "let"));
 
   // Followed by a variable name
-  letTree->addChild(returnMatch("identifier", current()->getValue()));
+  letTree->addChild(mustBe("identifier", current()->getValue()));
 
   // Check for an array index (i.e., '[' followed by an expression followed by
   // ']')
-  if (checkMatch("symbol", "[")) {
-    letTree->addChild(returnMatch("symbol", "["));
+  if (have("symbol", "[")) {
+    letTree->addChild(mustBe("symbol", "["));
     letTree->addChild(compileExpression());
-    letTree->addChild(returnMatch("symbol", "]"));
+    letTree->addChild(mustBe("symbol", "]"));
   }
 
   // Followed by an '=' symbol
-  letTree->addChild(returnMatch("symbol", "="));
+  letTree->addChild(mustBe("symbol", "="));
 
   // Followed by an expression
   letTree->addChild(compileExpression());
 
   // The let statement should end with a semicolon
-  letTree->addChild(returnMatch("symbol", ";"));
+  letTree->addChild(mustBe("symbol", ";"));
 
   return letTree;
 }
@@ -352,59 +352,59 @@ ParseTree* CompilerParser::compileIf() {
   ParseTree* ifTree = new ParseTree("ifStatement", "");
 
   // 'if' keyword
-  if (!checkMatch("keyword", "if")) {
+  if (!have("keyword", "if")) {
     throw ParseException();
   }
-  ifTree->addChild(returnMatch("keyword", "if"));
+  ifTree->addChild(mustBe("keyword", "if"));
 
   // '(' symbol
-  if (!checkMatch("symbol", "(")) {
+  if (!have("symbol", "(")) {
     throw ParseException();
   }
-  ifTree->addChild(returnMatch("symbol", "("));
+  ifTree->addChild(mustBe("symbol", "("));
 
   // Expression
   ifTree->addChild(compileExpression());
 
   // ')' symbol
-  if (!checkMatch("symbol", ")")) {
+  if (!have("symbol", ")")) {
     throw ParseException();
   }
-  ifTree->addChild(returnMatch("symbol", ")"));
+  ifTree->addChild(mustBe("symbol", ")"));
 
   // '{' symbol
-  if (!checkMatch("symbol", "{")) {
+  if (!have("symbol", "{")) {
     throw ParseException();
   }
-  ifTree->addChild(returnMatch("symbol", "{"));
+  ifTree->addChild(mustBe("symbol", "{"));
 
   // Statements
   ifTree->addChild(compileStatements());
 
   // '}' symbol
-  if (!checkMatch("symbol", "}")) {
+  if (!have("symbol", "}")) {
     throw ParseException();
   }
-  ifTree->addChild(returnMatch("symbol", "}"));
+  ifTree->addChild(mustBe("symbol", "}"));
 
   // Optional 'else' clause
-  if (checkMatch("keyword", "else")) {
-    ifTree->addChild(returnMatch("keyword", "else"));
+  if (have("keyword", "else")) {
+    ifTree->addChild(mustBe("keyword", "else"));
 
     // '{' symbol for the 'else' clause
-    if (!checkMatch("symbol", "{")) {
+    if (!have("symbol", "{")) {
       throw ParseException();
     }
-    ifTree->addChild(returnMatch("symbol", "{"));
+    ifTree->addChild(mustBe("symbol", "{"));
 
     // Statements for the 'else' clause
     ifTree->addChild(compileStatements());
 
     // '}' symbol for the 'else' clause
-    if (!checkMatch("symbol", "}")) {
+    if (!have("symbol", "}")) {
       throw ParseException();
     }
-    ifTree->addChild(returnMatch("symbol", "}"));
+    ifTree->addChild(mustBe("symbol", "}"));
   }
 
   return ifTree;
@@ -419,40 +419,40 @@ ParseTree* CompilerParser::compileWhile() {
   ParseTree* whileTree = new ParseTree("whileStatement", "");
 
   // 'while' keyword
-  if (!checkMatch("keyword", "while")) {
+  if (!have("keyword", "while")) {
     throw ParseException();
   }
-  whileTree->addChild(returnMatch("keyword", "while"));
+  whileTree->addChild(mustBe("keyword", "while"));
 
   // '(' symbol
-  if (!checkMatch("symbol", "(")) {
+  if (!have("symbol", "(")) {
     throw ParseException();
   }
-  whileTree->addChild(returnMatch("symbol", "("));
+  whileTree->addChild(mustBe("symbol", "("));
 
   // Expression
   whileTree->addChild(compileExpression());
 
   // ')' symbol
-  if (!checkMatch("symbol", ")")) {
+  if (!have("symbol", ")")) {
     throw ParseException();
   }
-  whileTree->addChild(returnMatch("symbol", ")"));
+  whileTree->addChild(mustBe("symbol", ")"));
 
   // '{' symbol
-  if (!checkMatch("symbol", "{")) {
+  if (!have("symbol", "{")) {
     throw ParseException();
   }
-  whileTree->addChild(returnMatch("symbol", "{"));
+  whileTree->addChild(mustBe("symbol", "{"));
 
   // Statements
   whileTree->addChild(compileStatements());
 
   // '}' symbol
-  if (!checkMatch("symbol", "}")) {
+  if (!have("symbol", "}")) {
     throw ParseException();
   }
-  whileTree->addChild(returnMatch("symbol", "}"));
+  whileTree->addChild(mustBe("symbol", "}"));
 
   return whileTree;
 }
@@ -466,13 +466,13 @@ ParseTree* CompilerParser::compileDo() {
   ParseTree* doTree = new ParseTree("doStatement", "");
 
   // A do statement should start with the keyword 'do'
-  doTree->addChild(returnMatch("keyword", "do"));
+  doTree->addChild(mustBe("keyword", "do"));
 
   // Followed by an expression
   doTree->addChild(compileExpression());
 
   // The do statement should end with a semicolon
-  doTree->addChild(returnMatch("symbol", ";"));
+  doTree->addChild(mustBe("symbol", ";"));
 
   return doTree;
 }
@@ -486,16 +486,16 @@ ParseTree* CompilerParser::compileReturn() {
   ParseTree* returnTree = new ParseTree("returnStatement", "");
 
   // A return statement should start with the keyword 'return'
-  returnTree->addChild(returnMatch("keyword", "return"));
+  returnTree->addChild(mustBe("keyword", "return"));
 
   // Optionally followed by an expression
-  if (!checkMatch("symbol", ";")) {  // If the next token is not a semicolon, then we
+  if (!have("symbol", ";")) {  // If the next token is not a semicolon, then we
                                // expect an expression
     returnTree->addChild(compileExpression());
   }
 
   // The return statement should end with a semicolon
-  returnTree->addChild(returnMatch("symbol", ";"));
+  returnTree->addChild(mustBe("symbol", ";"));
 
   return returnTree;
 }
@@ -543,46 +543,46 @@ ParseTree* CompilerParser::compileTerm() {
   Token* currentToken = current();
 
   if (currentToken->getType() == "integerConstant") {
-    termTree->addChild(returnMatch("integerConstant", currentToken->getValue()));
+    termTree->addChild(mustBe("integerConstant", currentToken->getValue()));
   } else if (currentToken->getType() == "stringConstant") {
-    termTree->addChild(returnMatch("stringConstant", currentToken->getValue()));
+    termTree->addChild(mustBe("stringConstant", currentToken->getValue()));
   } else if (currentToken->getType() == "keyword" &&
              (currentToken->getValue() == "true" ||
               currentToken->getValue() == "false" ||
               currentToken->getValue() == "null" ||
               currentToken->getValue() == "this")) {
-    termTree->addChild(returnMatch("keyword", currentToken->getValue()));
+    termTree->addChild(mustBe("keyword", currentToken->getValue()));
   } else if (currentToken->getType() == "identifier") {
     // Save the identifier
-    termTree->addChild(returnMatch("identifier", currentToken->getValue()));
+    termTree->addChild(mustBe("identifier", currentToken->getValue()));
 
-    if (checkMatch("symbol", "[")) {  // Array access
-      termTree->addChild(returnMatch("symbol", "["));
+    if (have("symbol", "[")) {  // Array access
+      termTree->addChild(mustBe("symbol", "["));
       termTree->addChild(compileExpression());
-      termTree->addChild(returnMatch("symbol", "]"));
-    } else if (checkMatch("symbol", "(")) {  // Subroutine call in form:
+      termTree->addChild(mustBe("symbol", "]"));
+    } else if (have("symbol", "(")) {  // Subroutine call in form:
                                        // subroutineName(expressionList)
-      termTree->addChild(returnMatch("symbol", "("));
+      termTree->addChild(mustBe("symbol", "("));
       termTree->addChild(compileExpressionList());
-      termTree->addChild(returnMatch("symbol", ")"));
-    } else if (checkMatch("symbol",
+      termTree->addChild(mustBe("symbol", ")"));
+    } else if (have("symbol",
                     ".")) {  // Subroutine call in form:
                              // className/varName.subroutineName(expressionList)
-      termTree->addChild(returnMatch("symbol", "."));
-      termTree->addChild(returnMatch("identifier", current()->getValue()));
-      termTree->addChild(returnMatch("symbol", "("));
+      termTree->addChild(mustBe("symbol", "."));
+      termTree->addChild(mustBe("identifier", current()->getValue()));
+      termTree->addChild(mustBe("symbol", "("));
       termTree->addChild(compileExpressionList());
-      termTree->addChild(returnMatch("symbol", ")"));
+      termTree->addChild(mustBe("symbol", ")"));
     }
   } else if (currentToken->getType() == "symbol" &&
              currentToken->getValue() == "(") {
-    termTree->addChild(returnMatch("symbol", "("));
+    termTree->addChild(mustBe("symbol", "("));
     termTree->addChild(compileExpression());
-    termTree->addChild(returnMatch("symbol", ")"));
+    termTree->addChild(mustBe("symbol", ")"));
   } else if (currentToken->getType() == "symbol" &&
              (currentToken->getValue() == "-" ||
               currentToken->getValue() == "~")) {
-    termTree->addChild(returnMatch("symbol", currentToken->getValue()));
+    termTree->addChild(mustBe("symbol", currentToken->getValue()));
     termTree->addChild(compileTerm());
   } else {
     throw ParseException();
@@ -601,12 +601,12 @@ ParseTree* CompilerParser::compileExpressionList() {
 
   // If the next token is not a closing parenthesis, we expect at least one
   // expression
-  if (!checkMatch("symbol", ")")) {
+  if (!have("symbol", ")")) {
     expressionListTree->addChild(compileExpression());
 
     // While the next token is a comma, we expect more expressions
-    while (checkMatch("symbol", ",")) {
-      expressionListTree->addChild(returnMatch("symbol", ","));
+    while (have("symbol", ",")) {
+      expressionListTree->addChild(mustBe("symbol", ","));
       expressionListTree->addChild(compileExpression());
     }
   }
@@ -638,7 +638,7 @@ Token* CompilerParser::current() {
  * Check if the current token matches the expected type and value.
  * @return true if a match, false otherwise
  */
-bool CompilerParser::checkMatch(std::string expectedType, std::string expectedValue) {
+bool CompilerParser::have(std::string expectedType, std::string expectedValue) {
   if (tokensIterator != tokensList.end()) {
     Token* currentToken = *tokensIterator;
     if (currentToken->getType() == expectedType &&
@@ -655,9 +655,9 @@ bool CompilerParser::checkMatch(std::string expectedType, std::string expectedVa
  * throw a ParseException.
  * @return the current token before advancing
  */
-Token* CompilerParser::returnMatch(std::string expectedType,
+Token* CompilerParser::mustBe(std::string expectedType,
                               std::string expectedValue) {
-  if (checkMatch(expectedType, expectedValue)) {
+  if (have(expectedType, expectedValue)) {
     Token* currentToken = *tokensIterator;
     next();
     return currentToken;
