@@ -180,7 +180,7 @@ ParseTree* CompilerParser::compileParameterList() {
 
   while (tokensIterator != tokensList.end()) {
     // std::cout << "Current token in compileParameterList: "
-              << current()->getValue() << "\n";
+              // << current()->getValue() << "\n";
 
     if (expectType) {
       if (have("keyword", "int") || have("keyword", "char") ||
@@ -215,7 +215,7 @@ ParseTree* CompilerParser::compileParameterList() {
   }
 
   // std::cout << "Exiting compileParameterList with token: "
-            << current()->getValue() << "\n";
+            // << current()->getValue() << "\n";
 
   return parameterListTree;
 }
