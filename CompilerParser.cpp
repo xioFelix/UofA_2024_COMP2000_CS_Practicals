@@ -540,32 +540,38 @@ ParseTree* CompilerParser::compileReturn() {
  * @return a ParseTree
  */
 ParseTree* CompilerParser::compileExpression() {
+  // Ensure there are tokens to parse
+  if (tokensIterator == tokensList.end()) {
+    throw ParseException();
+  }
+
   ParseTree* expressionTree = new ParseTree("expression", "");
 
-  // Handle 'skip' keyword
-  if (current()->getType() == "keyword" && current()->getValue() == "skip") {
+  // Handle the special case for 'skip' keyword
+  if (have("keyword", "skip")) {
     expressionTree->addChild(current());
     next();
-  } else {
-    // Handle terms and operators
-    expressionTree->addChild(compileTerm());
+    return expressionTree;
+  }
 
-    // Add additional terms separated by operators
-    while (isOperator(current())) {  // Assuming you have a method that checks
-                                     // if a token is an operator
-      expressionTree->addChild(current());  // Add the operator
-      next();
-      expressionTree->addChild(compileTerm());  // Add the next term
-    }
+  // Start with the first term
+  ParseTree* currentTerm = compileTerm();
+  expressionTree->addChild(currentTerm);
+
+  // Check for operators and recursively process terms
+  while (have("symbol", "+") || have("symbol", "-") || have("symbol", "*") ||
+         have("symbol", "/") || have("symbol", "&") || have("symbol", "|") ||
+         have("symbol", ">") || have("symbol", "<") || have("symbol", "=") ||
+         have("symbol", "-") || have("symbol", "~")) {
+    expressionTree->addChild(current());  // Add operator
+    next();
+
+    // Recursively process the next term
+    ParseTree* nextTerm = compileTerm();
+    expressionTree->addChild(nextTerm);
   }
 
   return expressionTree;
-}
-
-// Helper function to check if a token is an operator
-bool CompilerParser::isOperator(Token* token) {
-  std::string operators = "+-*/&|<>=";
-  return operators.find(token->getValue()) != std::string::npos;
 }
 
 /**
@@ -573,54 +579,42 @@ bool CompilerParser::isOperator(Token* token) {
  * @return a ParseTree
  */
 ParseTree* CompilerParser::compileTerm() {
-  // Create a new parse tree for the term
+  if (tokensIterator == tokensList.end()) {
+    throw ParseException();  // No tokens left to process
+  }
+
   ParseTree* termTree = new ParseTree("term", "");
-  Token* currentToken = current();
 
-  if (currentToken->getType() == "integerConstant") {
-    termTree->addChild(mustBe("integerConstant", currentToken->getValue()));
-  } else if (currentToken->getType() == "stringConstant") {
-    termTree->addChild(mustBe("stringConstant", currentToken->getValue()));
-  } else if (currentToken->getType() == "keyword" &&
-             (currentToken->getValue() == "true" ||
-              currentToken->getValue() == "false" ||
-              currentToken->getValue() == "null" ||
-              currentToken->getValue() == "this")) {
-    termTree->addChild(mustBe("keyword", currentToken->getValue()));
-  } else if (currentToken->getType() == "identifier") {
-    // Save the identifier
-    termTree->addChild(mustBe("identifier", currentToken->getValue()));
-
-    if (have("symbol", "[")) {  // Array access
-      termTree->addChild(mustBe("symbol", "["));
-      termTree->addChild(compileExpression());
-      termTree->addChild(mustBe("symbol", "]"));
-    } else if (have("symbol", "(")) {  // Subroutine call in form:
-                                       // subroutineName(expressionList)
-      termTree->addChild(mustBe("symbol", "("));
-      termTree->addChild(compileExpressionList());
-      termTree->addChild(mustBe("symbol", ")"));
-    } else if (have("symbol",
-                    ".")) {  // Subroutine call in form:
-                             // className/varName.subroutineName(expressionList)
-      termTree->addChild(mustBe("symbol", "."));
-      termTree->addChild(mustBe("identifier", current()->getValue()));
-      termTree->addChild(mustBe("symbol", "("));
-      termTree->addChild(compileExpressionList());
-      termTree->addChild(mustBe("symbol", ")"));
-    }
-  } else if (currentToken->getType() == "symbol" &&
-             currentToken->getValue() == "(") {
-    termTree->addChild(mustBe("symbol", "("));
+  if (have("integerConstant", current()->getValue())) {
+    termTree->addChild(current());
+    next();
+  } else if (have("stringConstant", current()->getValue())) {
+    termTree->addChild(current());
+    next();
+  } else if (have("keyword", current()->getValue()) &&
+             (current()->getValue() == "true" ||
+              current()->getValue() == "false" ||
+              current()->getValue() == "null" ||
+              current()->getValue() == "this" ||
+              current()->getValue() == "skip")) {
+    termTree->addChild(current());
+    next();
+  } else if (have("identifier", current()->getValue())) {
+    termTree->addChild(current());
+    next();
+  } else if (have("symbol", "(")) {
+    next();  // Consume the '('
+    termTree->addChild(
+        new ParseTree("symbol", "("));  // Add the '(' to the term
     termTree->addChild(compileExpression());
-    termTree->addChild(mustBe("symbol", ")"));
-  } else if (currentToken->getType() == "symbol" &&
-             (currentToken->getValue() == "-" ||
-              currentToken->getValue() == "~")) {
-    termTree->addChild(mustBe("symbol", currentToken->getValue()));
-    termTree->addChild(compileTerm());
+    if (!have("symbol", ")")) {
+      throw ParseException();  // Expected closing parenthesis
+    }
+    termTree->addChild(
+        new ParseTree("symbol", ")"));  // Add the ')' to the term
+    next();                             // Consume the ')'
   } else {
-    throw ParseException();
+    throw ParseException();  // Unexpected token
   }
 
   return termTree;
@@ -631,15 +625,11 @@ ParseTree* CompilerParser::compileTerm() {
  * @return a ParseTree
  */
 ParseTree* CompilerParser::compileExpressionList() {
-  // Create a new parse tree for the expression list
   ParseTree* expressionListTree = new ParseTree("expressionList", "");
 
-  // If the next token is not a closing parenthesis, we expect at least one
-  // expression
   if (!have("symbol", ")")) {
     expressionListTree->addChild(compileExpression());
 
-    // While the next token is a comma, we expect more expressions
     while (have("symbol", ",")) {
       expressionListTree->addChild(mustBe("symbol", ","));
       expressionListTree->addChild(compileExpression());
