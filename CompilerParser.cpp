@@ -556,27 +556,19 @@ ParseTree* CompilerParser::compileExpression() {
 
   // Start with the first term
   ParseTree* currentTerm = compileTerm();
-  std::cout << "currentTerm Back to Expression" << std::endl;
   expressionTree->addChild(currentTerm);
 
   // Check for operators and recursively process terms
-  while (true) {
-    if (have("symbol", current()->getValue()) &&
-        (current()->getValue() == "+" || current()->getValue() == "-" ||
-         current()->getValue() == "*" || current()->getValue() == "/" ||
-         current()->getValue() == "&" || current()->getValue() == "|" ||
-         current()->getValue() == "<" || current()->getValue() == ">" ||
-         current()->getValue() == "=")) {
-      expressionTree->addChild(current());  // Add operator
-      next();
+  while (have("symbol", "+") || have("symbol", "-") || have("symbol", "*") ||
+         have("symbol", "/") || have("symbol", "&") || have("symbol", "|") ||
+         have("symbol", ">") || have("symbol", "<") || have("symbol", "=") ||
+         have("symbol", "-") || have("symbol", "~")) {
+    expressionTree->addChild(current());  // Add operator
+    next();
 
-      // Recursively process the next term
-      ParseTree* nextTerm = compileTerm();
-      std::cout << "nextTerm Back to Expression" << std::endl;
-      expressionTree->addChild(nextTerm);
-    } else {
-      break;
-    }
+    // Recursively process the next term
+    ParseTree* nextTerm = compileTerm();
+    expressionTree->addChild(nextTerm);
   }
 
   return expressionTree;
@@ -610,27 +602,17 @@ ParseTree* CompilerParser::compileTerm() {
   } else if (have("identifier", current()->getValue())) {
     termTree->addChild(current());
     next();
-
-    // Check for a function call
-    if (have("symbol", "(")) {
-      next();                                            // Consume the '('
-      termTree->addChild(new ParseTree("symbol", "("));  // Add '(' to the term
-      termTree->addChild(compileExpressionList());
-      if (!have("symbol", ")")) {
-        throw ParseException();  // Expected closing parenthesis
-      }
-      termTree->addChild(new ParseTree("symbol", ")"));  // Add ')' to the term
-      next();                                            // Consume the ')'
-    }
   } else if (have("symbol", "(")) {
-    next();                                            // Consume the '('
-    termTree->addChild(new ParseTree("symbol", "("));  // Add '(' to the term
+    next();  // Consume the '('
+    termTree->addChild(
+        new ParseTree("symbol", "("));  // Add the '(' to the term
     termTree->addChild(compileExpression());
     if (!have("symbol", ")")) {
       throw ParseException();  // Expected closing parenthesis
     }
-    termTree->addChild(new ParseTree("symbol", ")"));  // Add ')' to the term
-    next();                                            // Consume the ')'
+    termTree->addChild(
+        new ParseTree("symbol", ")"));  // Add the ')' to the term
+    next();                             // Consume the ')'
   } else {
     throw ParseException();  // Unexpected token
   }
