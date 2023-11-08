@@ -6,8 +6,8 @@
       "type": "lldb",
       "request": "launch",
       "args": [],
-      "cwd": "/Users/felix/Documents/Adelaide_Uni/2023/S2/CS2000/Prac/prac7-cpp",
-      "program": "/Users/felix/Documents/Adelaide_Uni/2023/S2/CS2000/Prac/prac7-cpp/build/Debug/outDebug"
+      "cwd": "/Users/felix/Documents/Adelaide_Uni/2023/S2/CS2000/Assignment/prac7-cpp",
+      "program": "/Users/felix/Documents/Adelaide_Uni/2023/S2/CS2000/Assignment/prac7-cpp/build/Debug/outDebug"
     }
   ]
 }
