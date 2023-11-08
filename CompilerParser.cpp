@@ -599,39 +599,23 @@ ParseTree* CompilerParser::compileTerm() {
               current()->getValue() == "skip")) {
     termTree->addChild(current());
     next();
-  } else  // Handling identifiers which might be variables or subroutine calls
-          // Handling identifiers which might be variables or subroutine calls
-    if (have("identifier","")) {
-      termTree->addChild(current());  // Add the variable identifier
-      next();                         // Move to the next token
-
-      // Check for a subroutine call
-      if (have("symbol", ".")) {
-        termTree->addChild(current());  // Add the '.'
-        next();                         // Move to the next token
-
-        termTree->addChild(mustBe("identifier",""));   // Add the subroutine name
-        termTree->addChild(mustBe("symbol", "("));  // Expect and add the '('
-
-        // Compile the expression list inside the subroutine call
-        termTree->addChild(compileExpressionList());
-
-        termTree->addChild(mustBe("symbol", ")"));  // Expect and add the ')'
-      }
-    } else if (have("symbol", "(")) {
-      next();  // Consume the '('
-      termTree->addChild(
-          new ParseTree("symbol", "("));  // Add the '(' to the term
-      termTree->addChild(compileExpression());
-      if (!have("symbol", ")")) {
-        throw ParseException();  // Expected closing parenthesis
-      }
-      termTree->addChild(
-          new ParseTree("symbol", ")"));  // Add the ')' to the term
-      next();                             // Consume the ')'
-    } else {
-      throw ParseException();  // Unexpected token
+  } else if (have("identifier", current()->getValue())) {
+    termTree->addChild(current());
+    next();
+  } else if (have("symbol", "(")) {
+    next();  // Consume the '('
+    termTree->addChild(
+        new ParseTree("symbol", "("));  // Add the '(' to the term
+    termTree->addChild(compileExpression());
+    if (!have("symbol", ")")) {
+      throw ParseException();  // Expected closing parenthesis
     }
+    termTree->addChild(
+        new ParseTree("symbol", ")"));  // Add the ')' to the term
+    next();                             // Consume the ')'
+  } else {
+    throw ParseException();  // Unexpected token
+  }
 
   return termTree;
 }
