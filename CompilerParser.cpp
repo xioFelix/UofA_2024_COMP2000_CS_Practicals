@@ -542,35 +542,47 @@ ParseTree* CompilerParser::compileReturn() {
 ParseTree* CompilerParser::compileExpression() {
   // Ensure there are tokens to parse
   if (tokensIterator == tokensList.end()) {
-    throw ParseException();
+    throw std::runtime_error("No more tokens to parse.");
   }
 
   ParseTree* expressionTree = new ParseTree("expression", "");
 
+  // Debug log
+  // std::cout << "Compiling expression\n";
+
   // Handle the special case for 'skip' keyword
   if (have("keyword", "skip")) {
+    // std::cout << "Skip keyword encountered\n";
     expressionTree->addChild(current());
     next();
     return expressionTree;
   }
 
   // Start with the first term
+  // std::cout << "Compiling first term\n";
   ParseTree* currentTerm = compileTerm();
   expressionTree->addChild(currentTerm);
 
-  // Check for operators and recursively process terms
+  // Debug log
+  // std::cout << "Checking for operators\n";
+
   while (have("symbol", "+") || have("symbol", "-") || have("symbol", "*") ||
          have("symbol", "/") || have("symbol", "&") || have("symbol", "|") ||
          have("symbol", ">") || have("symbol", "<") || have("symbol", "=") ||
-         have("symbol", "-") || have("symbol", "~")) {
+         have("symbol", "~")) {
+    // std::cout << "Operator encountered\n";
     expressionTree->addChild(current());  // Add operator
     next();
+
+    // Debug log
+    // std::cout << "Compiling next term\n";
 
     // Recursively process the next term
     ParseTree* nextTerm = compileTerm();
     expressionTree->addChild(nextTerm);
   }
 
+  // std::cout << "Completed compiling expression\n";
   return expressionTree;
 }
 
@@ -626,12 +638,6 @@ ParseTree* CompilerParser::compileTerm() {
  */
 ParseTree* CompilerParser::compileExpressionList() {
   ParseTree* expressionListTree = new ParseTree("expressionList", "");
-
-  // The expression list can be empty, so check for the closing parenthesis
-  // first
-  if (have("symbol", ")")) {
-    return expressionListTree;  // Return the empty expression list
-  }
 
   // Compile the first expression
   expressionListTree->addChild(compileExpression());
