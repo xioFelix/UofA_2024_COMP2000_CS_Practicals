@@ -541,101 +541,72 @@ ParseTree* CompilerParser::compileReturn() {
  */
 ParseTree* CompilerParser::compileExpression() {
   if (tokensIterator == tokensList.end()) {
-    throw std::runtime_error(
-        "No more tokens to parse.");  // Throws an exception if there are no
-                                      // tokens left to parse.
+    throw std::runtime_error("No more tokens to parse.");
   }
 
   ParseTree* expressionTree = new ParseTree("expression", "");
 
   // Check for 'skip' keyword which seems to be a special case in your language.
   if (have("keyword", "skip")) {
-    // std::cout << "Debug: 'skip' keyword encountered." << std::endl;
     expressionTree->addChild(new ParseTree("keyword", current()->getValue()));
     next();  // Consumes the 'skip' keyword token.
     return expressionTree;
   }
 
-  // Debug: Start parsing the first term.
-  // std::cout << "Debug: Compiling first term." << std::endl;
+  // Start parsing the first term.
   ParseTree* currentTerm = compileTerm();
   expressionTree->addChild(currentTerm);
 
-  // Debug: Output the current token before checking for operators.
-  // std::cout << "Debug: Current token before checking for operators: "
-          //  << current()->getType() << " '" << current()->getValue() << "'"
-          //  << std::endl;
-
-  // Debug: Check for the presence of any operators after the first term.
-  // std::cout << "Debug: Checking for operators after the first term."
-           // << std::endl;
+  // Check for the presence of any operators after the first term.
   while (have("symbol", "+") || have("symbol", "-") || have("symbol", "*") ||
          have("symbol", "/") || have("symbol", "&") || have("symbol", "|") ||
          have("symbol", ">") || have("symbol", "<") || have("symbol", "=") ||
          have("symbol", "~")) {
-    // std::cout << "Debug: Operator '" << current()->getValue()
-             // << "' encountered." << std::endl;
     expressionTree->addChild(new ParseTree("operator", current()->getValue()));
     next();  // Consumes the operator token.
-
-    // Debug: Output the current token before compiling the next term.
-    // std::cout << "Debug: Current token before compiling next term: "
-             // << current()->getType() << " '" << current()->getValue() << "'"
-             // << std::endl;
-
-    // Debug: Compile the next term after the operator.
-    // std::cout << "Debug: Compiling term after operator '"
-              //<< current()->getValue() << "'." << std::endl;
     ParseTree* nextTerm = compileTerm();
     expressionTree->addChild(nextTerm);
   }
 
   // Now check for '.' which indicates a method call or member access
   if (have("symbol", ".")) {
-    // std::cout << "Debug: '.' for method call or member access encountered."
-              //<< std::endl;
-    next();  // Consumes the '.' token
+    next();  // Consume the '.' token
 
     if (current()->getType() == "identifier") {
       std::string methodName = current()->getValue();
-      // std::cout << "Debug: Identifier for method '" << methodName
-               // << "' encountered." << std::endl;
-      next();  // Consumes the identifier token
+      next();  // Consume the identifier token
 
-      // If it's a method call, there should be a '(' following the identifier
+      // Expecting '(' after a method name indicates a method call
       if (have("symbol", "(")) {
-        next();  // Consumes the '(' token
-        // std::cout << "Debug: '(' for method call argument list encountered."
-                 // << std::endl;
+        next();  // Consume the '(' token
 
         ParseTree* functionCallNode = new ParseTree("functionCall", methodName);
         ParseTree* argumentListNode = new ParseTree("argumentList", "");
-        functionCallNode->addChild(
-            argumentListNode);  // Add the argumentList to the functionCall
 
         // Compile arguments until a closing ')' is found
         while (!have("symbol", ")")) {
-          // std::cout << "Debug: Compiling argument." << std::endl;
           argumentListNode->addChild(compileExpression());
           if (have("symbol", ",")) {
             next();  // Consumes the ',' token between arguments
           }
         }
-        next();  // Consumes the ')' token ending the argument list
+        next();  // Consume the ')' token at the end of the argument list
 
+        functionCallNode->addChild(argumentListNode);
         expressionTree->addChild(
-            functionCallNode);  // Add the functionCall to the expression
-        // std::cout << "Debug: Completed compiling the function call."
-                 // << std::endl;
+            functionCallNode);  // Add the functionCall to the expression tree
+                                // correctly
       }
     }
   }
 
-  // Debug: Completed compiling the expression.
-  // std::cout << "Debug: Completed compiling the expression." << std::endl;
   return expressionTree;
 }
 
+/**
+ * Generates a parse tree for an expression term
+ * @return a ParseTree
+ */
 /**
  * Generates a parse tree for an expression term
  * @return a ParseTree
@@ -647,34 +618,68 @@ ParseTree* CompilerParser::compileTerm() {
 
   ParseTree* termTree = new ParseTree("term", "");
 
+  // Handle integer constants
   if (have("integerConstant", current()->getValue())) {
-    termTree->addChild(current());
+    termTree->addChild(new ParseTree("integerConstant", current()->getValue()));
     next();
-  } else if (have("stringConstant", current()->getValue())) {
-    termTree->addChild(current());
+  }
+  // Handle string constants
+  else if (have("stringConstant", current()->getValue())) {
+    termTree->addChild(new ParseTree("stringConstant", current()->getValue()));
     next();
-  } else if (have("keyword", current()->getValue()) &&
-             (current()->getValue() == "true" ||
-              current()->getValue() == "false" ||
-              current()->getValue() == "null" ||
-              current()->getValue() == "this" ||
-              current()->getValue() == "skip")) {
-    termTree->addChild(current());
+  }
+  // Handle keywords true, false, null, this
+  else if (have("keyword", current()->getValue()) &&
+           (current()->getValue() == "true" ||
+            current()->getValue() == "false" ||
+            current()->getValue() == "null" ||
+            current()->getValue() == "this")) {
+    termTree->addChild(new ParseTree("keyword", current()->getValue()));
     next();
-  } else if (have("identifier", current()->getValue())) {
-    termTree->addChild(current());
+  }
+  // Handle identifiers and potentially method calls or array indexing
+  else if (have("identifier", current()->getValue())) {
+    termTree->addChild(new ParseTree("identifier", current()->getValue()));
     next();
-  } else if (have("symbol", "(")) {
+    // Handle array indexing
+    if (have("symbol", "[")) {
+      next();  // Consume the '['
+      termTree->addChild(new ParseTree("symbol", "["));
+      termTree->addChild(compileExpression());
+      if (!have("symbol", "]")) {
+        throw ParseException();  // Expected closing bracket
+      }
+      termTree->addChild(new ParseTree("symbol", "]"));
+      next();  // Consume the ']'
+    }
+    // Handle method calls
+    else if (have("symbol", "(")) {
+      next();  // Consume the '('
+      termTree->addChild(new ParseTree("symbol", "("));
+      termTree->addChild(compileExpressionList());
+      if (!have("symbol", ")")) {
+        throw ParseException();  // Expected closing parenthesis
+      }
+      termTree->addChild(new ParseTree("symbol", ")"));
+      next();  // Consume the ')'
+    }
+  }
+  // Handle sub-expression
+  else if (have("symbol", "(")) {
     next();  // Consume the '('
-    termTree->addChild(
-        new ParseTree("symbol", "("));  // Add the '(' to the term
+    termTree->addChild(new ParseTree("symbol", "("));
     termTree->addChild(compileExpression());
     if (!have("symbol", ")")) {
       throw ParseException();  // Expected closing parenthesis
     }
-    termTree->addChild(
-        new ParseTree("symbol", ")"));  // Add the ')' to the term
-    next();                             // Consume the ')'
+    termTree->addChild(new ParseTree("symbol", ")"));
+    next();  // Consume the ')'
+  }
+  // Handle unary operations
+  else if (have("symbol", "-") || have("symbol", "~")) {
+    termTree->addChild(new ParseTree("unaryOp", current()->getValue()));
+    next();
+    termTree->addChild(compileTerm());
   } else {
     throw ParseException();  // Unexpected token
   }
