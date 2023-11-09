@@ -613,75 +613,78 @@ ParseTree* CompilerParser::compileExpression() {
  */
 ParseTree* CompilerParser::compileTerm() {
   if (tokensIterator == tokensList.end()) {
-    throw ParseException();  // No tokens left to process
+    throw std::runtime_error(
+        "No more tokens to parse.");  // No tokens left to process
   }
 
   ParseTree* termTree = new ParseTree("term", "");
 
-  // Handle integer constants
   if (have("integerConstant", current()->getValue())) {
     termTree->addChild(new ParseTree("integerConstant", current()->getValue()));
     next();
-  }
-  // Handle string constants
-  else if (have("stringConstant", current()->getValue())) {
+  } else if (have("stringConstant", current()->getValue())) {
     termTree->addChild(new ParseTree("stringConstant", current()->getValue()));
     next();
-  }
-  // Handle keywords true, false, null, this
-  else if (have("keyword", current()->getValue()) &&
-           (current()->getValue() == "true" ||
-            current()->getValue() == "false" ||
-            current()->getValue() == "null" ||
-            current()->getValue() == "this")) {
+  } else if (have("keyword", current()->getValue()) &&
+             (current()->getValue() == "true" ||
+              current()->getValue() == "false" ||
+              current()->getValue() == "null" ||
+              current()->getValue() == "this")) {
     termTree->addChild(new ParseTree("keyword", current()->getValue()));
     next();
-  }
-  // Handle identifiers and potentially method calls or array indexing
-  else if (have("identifier", current()->getValue())) {
+  } else if (have("identifier", current()->getValue())) {
     termTree->addChild(new ParseTree("identifier", current()->getValue()));
     next();
-    // Handle array indexing
-    if (have("symbol", "[")) {
-      next();  // Consume the '['
-      termTree->addChild(new ParseTree("symbol", "["));
-      termTree->addChild(compileExpression());
-      if (!have("symbol", "]")) {
-        throw ParseException();  // Expected closing bracket
+
+    // If the next token is a '.', it's a method call or a member access.
+    if (have("symbol", ".")) {
+      termTree->addChild(new ParseTree("symbol", "."));
+      next();
+
+      if (have("identifier", current()->getValue())) {
+        termTree->addChild(new ParseTree("identifier", current()->getValue()));
+        next();
+
+        // If the next token is a '(', it indicates a function call with an
+        // argument list.
+        if (have("symbol", "(")) {
+          termTree->addChild(new ParseTree("symbol", "("));
+          next();
+
+          ParseTree* expressionListTree = new ParseTree("expressionList", "");
+          while (!have("symbol", ")")) {
+            expressionListTree->addChild(compileExpression());
+            if (have("symbol", ",")) {
+              expressionListTree->addChild(new ParseTree("symbol", ","));
+              next();  // Consume the ',' token between arguments.
+            }
+          }
+          termTree->addChild(expressionListTree);
+
+          if (have("symbol", ")")) {
+            termTree->addChild(new ParseTree("symbol", ")"));
+            next();  // Consume the ')' token at the end of the argument list.
+          } else {
+            throw std::runtime_error(
+                "Expected closing parenthesis for function call.");
+          }
+        }
+      } else {
+        throw std::runtime_error(
+            "Expected identifier after '.' for method call.");
       }
-      termTree->addChild(new ParseTree("symbol", "]"));
-      next();  // Consume the ']'
     }
-    // Handle method calls
-    else if (have("symbol", "(")) {
-      next();  // Consume the '('
-      termTree->addChild(new ParseTree("symbol", "("));
-      termTree->addChild(compileExpressionList());
-      if (!have("symbol", ")")) {
-        throw ParseException();  // Expected closing parenthesis
-      }
-      termTree->addChild(new ParseTree("symbol", ")"));
-      next();  // Consume the ')'
-    }
-  }
-  // Handle sub-expression
-  else if (have("symbol", "(")) {
-    next();  // Consume the '('
+  } else if (have("symbol", "(")) {
     termTree->addChild(new ParseTree("symbol", "("));
+    next();  // Consume the '('
     termTree->addChild(compileExpression());
     if (!have("symbol", ")")) {
-      throw ParseException();  // Expected closing parenthesis
+      throw std::runtime_error("Expected closing parenthesis.");
     }
     termTree->addChild(new ParseTree("symbol", ")"));
     next();  // Consume the ')'
-  }
-  // Handle unary operations
-  else if (have("symbol", "-") || have("symbol", "~")) {
-    termTree->addChild(new ParseTree("unaryOp", current()->getValue()));
-    next();
-    termTree->addChild(compileTerm());
   } else {
-    throw ParseException();  // Unexpected token
+    throw std::runtime_error("Unexpected token type.");
   }
 
   return termTree;
