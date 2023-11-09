@@ -113,18 +113,18 @@ ParseTree* CompilerParser::compileClassVarDec() {
  * @return a ParseTree
  */
 ParseTree* CompilerParser::compileSubroutine() {
-  // std::cout << "Entering compileSubroutine\n";
+  // // std::cout << "Entering compileSubroutine\n";
 
   ParseTree* subroutineTree = new ParseTree("subroutine", "");
 
   if (have("keyword", "constructor")) {
-    // std::cout << "Parsing constructor\n";
+    // // std::cout << "Parsing constructor\n";
     subroutineTree->addChild(mustBe("keyword", "constructor"));
   } else if (have("keyword", "function")) {
-    // std::cout << "Parsing function\n";
+    // // std::cout << "Parsing function\n";
     subroutineTree->addChild(mustBe("keyword", "function"));
   } else if (have("keyword", "method")) {
-    // std::cout << "Parsing method\n";
+    // // std::cout << "Parsing method\n";
     subroutineTree->addChild(mustBe("keyword", "method"));
   } else {
     throw ParseException();
@@ -132,31 +132,31 @@ ParseTree* CompilerParser::compileSubroutine() {
 
   if (have("keyword", "void") || have("keyword", "int") ||
       have("keyword", "char") || have("keyword", "boolean")) {
-    // std::cout << "Parsed return type: " << current()->getValue() << "\n";
+    // // std::cout << "Parsed return type: " << current()->getValue() << "\n";
     subroutineTree->addChild(current());
     next();
   } else if (have("identifier", current()->getValue())) {
-    // std::cout << "Parsed return type: " << current()->getValue() << "\n";
+    // // std::cout << "Parsed return type: " << current()->getValue() << "\n";
     subroutineTree->addChild(current());
     next();
   } else {
     throw ParseException();
   }
 
-  // std::cout << "Parsed subroutine name: " << current()->getValue() << "\n";
+  // // std::cout << "Parsed subroutine name: " << current()->getValue() << "\n";
   subroutineTree->addChild(mustBe("identifier", current()->getValue()));
 
-  // std::cout << "Parsed opening parenthesis for parameters\n";
+  // // std::cout << "Parsed opening parenthesis for parameters\n";
   subroutineTree->addChild(mustBe("symbol", "("));
 
   subroutineTree->addChild(compileParameterList());
 
-  // std::cout << "Parsed closing parenthesis for parameters\n";
+  // // std::cout << "Parsed closing parenthesis for parameters\n";
   subroutineTree->addChild(mustBe("symbol", ")"));
 
   subroutineTree->addChild(compileSubroutineBody());
 
-  // std::cout << "Exiting compileSubroutine\n";
+  // // std::cout << "Exiting compileSubroutine\n";
 
   return subroutineTree;
 }
@@ -168,25 +168,25 @@ ParseTree* CompilerParser::compileSubroutine() {
 ParseTree* CompilerParser::compileParameterList() {
   ParseTree* parameterListTree = new ParseTree("parameterList", "");
 
-  // std::cout << "Entering compileParameterList\n";
+  // // std::cout << "Entering compileParameterList\n";
 
   bool expectType = true;
 
   // Check if the current token is a closing parenthesis
   if (have("symbol", ")")) {
-    // std::cout << "Exiting compileParameterList with no parameters\n";
+    // // std::cout << "Exiting compileParameterList with no parameters\n";
     return parameterListTree;
   }
 
   while (tokensIterator != tokensList.end()) {
-    // std::cout << "Current token in compileParameterList: "
+    // // std::cout << "Current token in compileParameterList: "
               // << current()->getValue() << "\n";
 
     if (expectType) {
       if (have("keyword", "int") || have("keyword", "char") ||
           have("keyword", "boolean") ||
           have("identifier", current()->getValue())) {
-        // std::cout << "Parsed type: " << current()->getValue() << "\n";
+        // // std::cout << "Parsed type: " << current()->getValue() << "\n";
 
         parameterListTree->addChild(current());
         next();
@@ -196,7 +196,7 @@ ParseTree* CompilerParser::compileParameterList() {
       }
     } else {
       if (have("identifier", current()->getValue())) {
-        // std::cout << "Parsed identifier: " << current()->getValue() << "\n";
+        // // std::cout << "Parsed identifier: " << current()->getValue() << "\n";
 
         parameterListTree->addChild(current());
         next();
@@ -214,7 +214,7 @@ ParseTree* CompilerParser::compileParameterList() {
     }
   }
 
-  // std::cout << "Exiting compileParameterList with token: "
+  // // std::cout << "Exiting compileParameterList with token: "
             // << current()->getValue() << "\n";
 
   return parameterListTree;
@@ -300,12 +300,12 @@ ParseTree* CompilerParser::compileStatements() {
   // Create a new parse tree for the series of statements
   ParseTree* statementsTree = new ParseTree("statements", "");
 
-  // std::cout << "Entering compileStatements\n";
+  // // std::cout << "Entering compileStatements\n";
 
   // Process statements until we encounter a character that doesn't start a
   // valid statement
   while (true) {
-    // std::cout << "Current token in compileStatements: " << current()->getValue()
+    // // std::cout << "Current token in compileStatements: " << current()->getValue()
               // << "\n";
 
     if (have("keyword", "let")) {
@@ -319,12 +319,12 @@ ParseTree* CompilerParser::compileStatements() {
     } else if (have("keyword", "return")) {
       statementsTree->addChild(compileReturn());
     } else {
-      // std::cout << "No valid statement found in compileStatements\n";
+      // // std::cout << "No valid statement found in compileStatements\n";
       break;
     }
   }
 
-  // std::cout << "Exiting compileStatements\n";
+  // // std::cout << "Exiting compileStatements\n";
 
   return statementsTree;
 }
@@ -371,48 +371,48 @@ ParseTree* CompilerParser::compileIf() {
   // Create a new parse tree for the if statement
   ParseTree* ifTree = new ParseTree("ifStatement", "");
 
-  // std::cout << "Entering compileIf\n";
-  // std::cout << "Current token in compileIf: " << current()->getValue() << "\n";
+  // // std::cout << "Entering compileIf\n";
+  // // std::cout << "Current token in compileIf: " << current()->getValue() << "\n";
 
   // 'if' keyword
   if (!have("keyword", "if")) {
-    // std::cout << "Expected 'if' keyword\n";
+    // // std::cout << "Expected 'if' keyword\n";
     throw ParseException();
   }
   ifTree->addChild(mustBe("keyword", "if"));
 
   // '(' symbol
   if (!have("symbol", "(")) {
-    // std::cout << "Expected '(' symbol\n";
+    // // std::cout << "Expected '(' symbol\n";
     throw ParseException();
   }
   ifTree->addChild(mustBe("symbol", "("));
 
   // Expression
-  // std::cout << "Parsing expression in if condition\n";
+  // // std::cout << "Parsing expression in if condition\n";
   ifTree->addChild(compileExpression());
 
   // ')' symbol
   if (!have("symbol", ")")) {
-    // std::cout << "Expected ')' symbol\n";
+    // // std::cout << "Expected ')' symbol\n";
     throw ParseException();
   }
   ifTree->addChild(mustBe("symbol", ")"));
 
   // '{' symbol
   if (!have("symbol", "{")) {
-    // std::cout << "Expected '{' symbol\n";
+    // // std::cout << "Expected '{' symbol\n";
     throw ParseException();
   }
   ifTree->addChild(mustBe("symbol", "{"));
 
   // Statements
-  // std::cout << "Parsing statements in if body\n";
+  // // std::cout << "Parsing statements in if body\n";
   ifTree->addChild(compileStatements());
 
   // '}' symbol
   if (!have("symbol", "}")) {
-    // std::cout << "Expected '}' symbol\n";
+    // // std::cout << "Expected '}' symbol\n";
     throw ParseException();
   }
   ifTree->addChild(mustBe("symbol", "}"));
@@ -423,24 +423,24 @@ ParseTree* CompilerParser::compileIf() {
 
     // '{' symbol for the 'else' clause
     if (!have("symbol", "{")) {
-      // std::cout << "Expected '{' symbol in else clause\n";
+      // // std::cout << "Expected '{' symbol in else clause\n";
       throw ParseException();
     }
     ifTree->addChild(mustBe("symbol", "{"));
 
     // Statements for the 'else' clause
-    // std::cout << "Parsing statements in else body\n";
+    // // std::cout << "Parsing statements in else body\n";
     ifTree->addChild(compileStatements());
 
     // '}' symbol for the 'else' clause
     if (!have("symbol", "}")) {
-      // std::cout << "Expected '}' symbol in else clause\n";
+      // // std::cout << "Expected '}' symbol in else clause\n";
       throw ParseException();
     }
     ifTree->addChild(mustBe("symbol", "}"));
   }
 
-  // std::cout << "Exiting compileIf\n";
+  // // std::cout << "Exiting compileIf\n";
 
   return ifTree;
 }
@@ -540,49 +540,99 @@ ParseTree* CompilerParser::compileReturn() {
  * @return a ParseTree
  */
 ParseTree* CompilerParser::compileExpression() {
-  // Ensure there are tokens to parse
   if (tokensIterator == tokensList.end()) {
-    throw std::runtime_error("No more tokens to parse.");
+    throw std::runtime_error(
+        "No more tokens to parse.");  // Throws an exception if there are no
+                                      // tokens left to parse.
   }
 
   ParseTree* expressionTree = new ParseTree("expression", "");
 
-  // Debug log
-  // std::cout << "Compiling expression\n";
-
-  // Handle the special case for 'skip' keyword
+  // Check for 'skip' keyword which seems to be a special case in your language.
   if (have("keyword", "skip")) {
-    // std::cout << "Skip keyword encountered\n";
-    expressionTree->addChild(current());
-    next();
+    // std::cout << "Debug: 'skip' keyword encountered." << std::endl;
+    expressionTree->addChild(new ParseTree("keyword", current()->getValue()));
+    next();  // Consumes the 'skip' keyword token.
     return expressionTree;
   }
 
-  // Start with the first term
-  // std::cout << "Compiling first term\n";
+  // Debug: Start parsing the first term.
+  // std::cout << "Debug: Compiling first term." << std::endl;
   ParseTree* currentTerm = compileTerm();
   expressionTree->addChild(currentTerm);
 
-  // Debug log
-  // std::cout << "Checking for operators\n";
+  // Debug: Output the current token before checking for operators.
+  // std::cout << "Debug: Current token before checking for operators: "
+          //  << current()->getType() << " '" << current()->getValue() << "'"
+          //  << std::endl;
 
+  // Debug: Check for the presence of any operators after the first term.
+  // std::cout << "Debug: Checking for operators after the first term."
+           // << std::endl;
   while (have("symbol", "+") || have("symbol", "-") || have("symbol", "*") ||
          have("symbol", "/") || have("symbol", "&") || have("symbol", "|") ||
          have("symbol", ">") || have("symbol", "<") || have("symbol", "=") ||
          have("symbol", "~")) {
-    // std::cout << "Operator encountered\n";
-    expressionTree->addChild(current());  // Add operator
-    next();
+    // std::cout << "Debug: Operator '" << current()->getValue()
+             // << "' encountered." << std::endl;
+    expressionTree->addChild(new ParseTree("operator", current()->getValue()));
+    next();  // Consumes the operator token.
 
-    // Debug log
-    // std::cout << "Compiling next term\n";
+    // Debug: Output the current token before compiling the next term.
+    // std::cout << "Debug: Current token before compiling next term: "
+             // << current()->getType() << " '" << current()->getValue() << "'"
+             // << std::endl;
 
-    // Recursively process the next term
+    // Debug: Compile the next term after the operator.
+    // std::cout << "Debug: Compiling term after operator '"
+              //<< current()->getValue() << "'." << std::endl;
     ParseTree* nextTerm = compileTerm();
     expressionTree->addChild(nextTerm);
   }
 
-  // std::cout << "Completed compiling expression\n";
+  // Now check for '.' which indicates a method call or member access
+  if (have("symbol", ".")) {
+    // std::cout << "Debug: '.' for method call or member access encountered."
+              //<< std::endl;
+    next();  // Consumes the '.' token
+
+    if (current()->getType() == "identifier") {
+      std::string methodName = current()->getValue();
+      // std::cout << "Debug: Identifier for method '" << methodName
+               // << "' encountered." << std::endl;
+      next();  // Consumes the identifier token
+
+      // If it's a method call, there should be a '(' following the identifier
+      if (have("symbol", "(")) {
+        next();  // Consumes the '(' token
+        // std::cout << "Debug: '(' for method call argument list encountered."
+                 // << std::endl;
+
+        ParseTree* functionCallNode = new ParseTree("functionCall", methodName);
+        ParseTree* argumentListNode = new ParseTree("argumentList", "");
+        functionCallNode->addChild(
+            argumentListNode);  // Add the argumentList to the functionCall
+
+        // Compile arguments until a closing ')' is found
+        while (!have("symbol", ")")) {
+          // std::cout << "Debug: Compiling argument." << std::endl;
+          argumentListNode->addChild(compileExpression());
+          if (have("symbol", ",")) {
+            next();  // Consumes the ',' token between arguments
+          }
+        }
+        next();  // Consumes the ')' token ending the argument list
+
+        expressionTree->addChild(
+            functionCallNode);  // Add the functionCall to the expression
+        // std::cout << "Debug: Completed compiling the function call."
+                 // << std::endl;
+      }
+    }
+  }
+
+  // Debug: Completed compiling the expression.
+  // std::cout << "Debug: Completed compiling the expression." << std::endl;
   return expressionTree;
 }
 
